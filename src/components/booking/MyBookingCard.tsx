@@ -8,8 +8,8 @@ const MyBookingCard = ({
   booking: Booking;
   action: { cancel: () => void; paymentModal: () => void };
 }) => {
+  const imageBaseUrl = import.meta.env.VITE_CLOUD_PUBLIC_KEY + "/";
   const status = booking.status.toUpperCase();
-  const paymentStatus = booking.paymentStatus.toUpperCase();
 
   const statusMap: Record<string, { text: string; classes: string }> = {
     CANCELLED: {
@@ -69,15 +69,13 @@ const MyBookingCard = ({
       }`}
     >
       {/* Image */}
-      {booking.images && (
-        <img
-          src={booking.images[0]}
-          alt={booking.title}
-          className={`w-[200px] h-auto object-cover flex-shrink-0 ${
-            status === "cancelled" ? "grayscale" : ""
-          }`}
-        />
-      )}
+      <img
+        src={imageBaseUrl + booking.imageUrl}
+        alt={booking.title}
+        className={`w-[200px] h-auto object-cover flex-shrink-0 ${
+          status === "cancelled" ? "grayscale" : ""
+        }`}
+      />
 
       {/* Content */}
       <div className="flex-1 p-5 flex flex-col justify-between min-w-0">
@@ -178,7 +176,7 @@ const MyBookingCard = ({
             ].includes(status) && (
               <>
                 {/* Payment Button */}
-                {paymentStatus === "PENDING" && (
+                {status === "PENDING" && (
                   <button
                     onClick={action.paymentModal}
                     className="px-4 py-2 rounded-lg text-[12px] bg-gold/10 border border-gold/20 text-gold hover:bg-gold/20 transition"
