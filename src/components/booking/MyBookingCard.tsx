@@ -1,15 +1,17 @@
 import { Link } from "react-router-dom";
-import type { Booking } from "../../pages/bookings/BookingTypes";
+import type { BookingCard } from "../../pages/bookings/BookingTypes";
 
 const MyBookingCard = ({
   booking,
   action,
 }: {
-  booking: Booking;
+  booking: BookingCard;
   action: { cancel: () => void; paymentModal: () => void };
 }) => {
   const imageBaseUrl = import.meta.env.VITE_CLOUD_PUBLIC_KEY + "/";
   const status = booking.status.toUpperCase();
+
+  console.log(status);
 
   const statusMap: Record<string, { text: string; classes: string }> = {
     CANCELLED: {
@@ -176,7 +178,7 @@ const MyBookingCard = ({
             ].includes(status) && (
               <>
                 {/* Payment Button */}
-                {status === "PENDING" && (
+                {status === "PENDING_PAYMENT" && (
                   <button
                     onClick={action.paymentModal}
                     className="px-4 py-2 rounded-lg text-[12px] bg-gold/10 border border-gold/20 text-gold hover:bg-gold/20 transition"

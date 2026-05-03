@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import MyBookingCard from "../../components/booking/MyBookingCard";
 import PaymentModal from "../../components/modals/PaymentModal";
 import ToastNotif from "../../components/modals/ToastNotif";
-import type { Booking } from "./BookingTypes";
+import type { BookingCard } from "./BookingTypes";
 import { cancelBooking, getMyBookings } from "../../api/bookProperty";
 import { requestPaymentIntent } from "../../api/payment";
 import { Elements } from "@stripe/react-stripe-js";
@@ -17,13 +17,15 @@ const MyBookings = () => {
   const { userData } = useUserData();
   const { payload } = useWebSocket("my-bookings");
 
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [bookings, setBookings] = useState<BookingCard[]>([]);
   const [showPaymentModal, setShowPaymentModal] = useState<boolean>(false);
   const [notification, setNotification] = useState<{
     show: Boolean;
     message: string;
   }>({ show: false, message: "" });
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<BookingCard | null>(
+    null,
+  );
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [idempotencyKeyStorage, setIdempotencyKeyStorage] = useState<
     string | null
@@ -54,7 +56,7 @@ const MyBookings = () => {
     }
   };
 
-  const handlePaymentModal = async (booking: Booking) => {
+  const handlePaymentModal = async (booking: BookingCard) => {
     const storageKey = `payment:${booking.id}:${userData.id}:pay`;
     setIdempotencyKeyStorage(storageKey);
     const res = await requestPaymentIntent(booking.id, storageKey);

@@ -1,6 +1,6 @@
 import { memo, useState } from "react";
 
-import type { Booking } from "../../pages/bookings/BookingTypes";
+import type { BookingCard } from "../../pages/bookings/BookingTypes";
 import {
   useStripe,
   useElements,
@@ -10,7 +10,7 @@ import {
 } from "@stripe/react-stripe-js";
 
 interface PaymentModalProps {
-  booking: Booking;
+  booking: BookingCard;
   clientSecret: string;
   action: {
     onPaymentSuccess: () => void;
@@ -20,6 +20,7 @@ interface PaymentModalProps {
 }
 
 const PaymentModal = ({ booking, clientSecret, action }: PaymentModalProps) => {
+  const imageBaseUrl = import.meta.env.VITE_CLOUD_PUBLIC_KEY + "/";
   const stripe = useStripe();
   const elements = useElements();
 
@@ -133,7 +134,7 @@ const PaymentModal = ({ booking, clientSecret, action }: PaymentModalProps) => {
                 style={{ animation: "statusPulse 2s ease-in-out infinite" }}
               />
               <span className="text-[11px] font-semibold text-gold uppercase tracking-[0.05em]">
-                {booking.paymentStatus}
+                {booking.status}
               </span>
             </div>
           </div>
@@ -141,15 +142,11 @@ const PaymentModal = ({ booking, clientSecret, action }: PaymentModalProps) => {
           {/* Booking info */}
           <div className="bg-dark-900 border border-white/[0.07] rounded-xl p-4 mb-4 flex gap-4 items-start">
             <div className="w-[25%] min-w-[80px] aspect-square rounded-[10px] bg-dark-600 flex-shrink-0 overflow-hidden">
-              {booking.images?.[0] ? (
-                <img
-                  src={booking.images[0]}
-                  alt={booking.title}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-dark-600" />
-              )}
+              <img
+                src={imageBaseUrl + booking.imageUrl}
+                alt={booking.title}
+                className="w-full h-full object-cover"
+              />
             </div>
             <div className="flex flex-col justify-between text-[13px] text-white my-auto gap-1">
               <div>
