@@ -62,7 +62,7 @@ const MyBookings = () => {
     const res = await requestPaymentIntent(booking.id, storageKey);
 
     if (res?.success) {
-      setClientSecret(res.paymentIntent);
+      setClientSecret(res.clientSecret);
       setSelectedBooking(booking);
       setShowPaymentModal(true);
     }
