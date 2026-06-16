@@ -98,7 +98,7 @@ const OwnerHome = () => {
               properties.map((property: property) => (
                 <div className="bg-dark-900 border border-white/[0.07] rounded-xl p-4 flex items-center gap-4 hover:border-gold/30 transition-all cursor-pointer">
                   <img
-                    src={`${imageBaseUrl} + "/" +  ${property.imageUrl}?w=400`}
+                    src={imageBaseUrl + "/" + property.imageUrl + "?w=400"}
                     alt="Property"
                     className="w-20 h-20 rounded-lg object-cover"
                   />
