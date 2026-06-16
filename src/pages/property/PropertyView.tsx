@@ -67,11 +67,11 @@ const PropertyView = () => {
   useEffect(() => {
     const bookingDateRange = location.state?.bookingDateRange;
 
-    if (bookingDateRange.start) {
+    if (bookingDateRange?.start) {
       setBooking((prev) => ({ ...prev, start: bookingDateRange.start }));
     }
 
-    if (bookingDateRange.end) {
+    if (bookingDateRange?.end) {
       setBooking((prev) => ({ ...prev, end: bookingDateRange.end }));
     }
 
