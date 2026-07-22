@@ -17,9 +17,15 @@ const SkeletonLoading = ({
   const cardHeight = cardType === "landscape" ? "h-[160px]" : "h-[240px]";
 
   return (
-    <div id="skeleton-overlay" className="h-[90vh] bg-dark-800 flex flex-col">
+    <div
+      id="skeleton-overlay"
+      className="min-h-[90vh] bg-dark-800 flex flex-col animate-fadeIn"
+      role="status"
+      aria-label="Loading content"
+    >
+      <span className="sr-only">Loading content, please wait</span>
       {body && (
-        <div className="p-8 flex flex-col gap-5 flex-1">
+        <div className="p-4 sm:p-6 md:p-8 flex flex-col gap-5 flex-1">
           {/* Search */}
           {search && <div className="skel-block h-[58px] rounded-[40px]" />}
 

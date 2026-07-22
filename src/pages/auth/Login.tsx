@@ -51,10 +51,10 @@ const Login = () => {
   }, [navigate]);
 
   return (
-    <div className="h-[90vh] bg-dark-800 min-h-screen h-full" id="sc-login">
-      <div className="flex items-center justify-center min-h-screen p-8">
-        <div className="bg-dark-700 border border-white/[0.09] rounded-[16px] px-10 py-9 w-full max-w-[400px]">
-          <h1 className="font-serif text-[26px] text-[#e8e6e1] mb-1.5">
+    <div className="bg-dark-800 min-h-screen animated-gradient" id="sc-login">
+      <div className="flex items-center justify-center min-h-screen p-4 sm:p-8">
+        <div className="bg-dark-700 border border-white/[0.09] rounded-[16px] px-6 py-7 sm:px-10 sm:py-9 w-full max-w-[400px] animate-scaleIn">
+          <h1 className="font-serif text-[26px] text-primary mb-1.5 text-gradient-gold">
             Welcome back
           </h1>
           <p className="text-[13px] text-muted-faint mb-5">
@@ -62,18 +62,22 @@ const Login = () => {
           </p>
 
           {error.length > 0 && (
-            <div className="border-l-4 border-red-500 text-red-500 p-2 bg-red-100">
+            <div className="border-l-4 border-red-500 text-red-400 p-3 bg-red-500/10 rounded-lg animate-fadeInDown mb-3">
               {error}
             </div>
           )}
 
           <form onSubmit={onSubmit}>
             <div className="mb-3">
-              <div className="text-[11px] text-white uppercase tracking-[0.07em] mb-1.5">
+              <label
+                htmlFor="login-email"
+                className="block text-[11px] text-white uppercase tracking-[0.07em] mb-1.5"
+              >
                 Email
-              </div>
+              </label>
               <input
-                className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] text-[#e8e6e1] text-[13px] font-sans transition-colors"
+                id="login-email"
+                className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] text-primary text-[13px] font-sans transition-colors"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -83,24 +87,30 @@ const Login = () => {
             </div>
 
             <div className="mb-3">
-              <div className="text-[11px] text-white uppercase tracking-[0.07em] mb-1.5">
+              <label
+                htmlFor="login-password"
+                className="block text-[11px] text-white uppercase tracking-[0.07em] mb-1.5"
+              >
                 Password
-              </div>
+              </label>
               <div className="relative">
                 <input
-                  className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] pr-10 text-[#e8e6e1] text-[13px] font-sans transition-colors"
+                  id="login-password"
+                  className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] pr-10 text-primary text-[13px] font-sans transition-colors"
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Password"
                   required
                 />
-                <span
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-faint text-[14px] cursor-pointer"
+                <button
+                  type="button"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-muted-faint hover-scale"
                   onClick={togglePasswordVisibility}
                 >
-                  {showPassword ? <FaEye /> : <FaEyeSlash />}
-                </span>
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
               </div>
             </div>
 
@@ -112,7 +122,7 @@ const Login = () => {
 
             <button
               type="submit"
-              className="w-full bg-gold text-dark-900 border-none rounded-[10px] py-[13px] text-[14px] font-semibold font-sans cursor-pointer hover:bg-gold-light transition-colors mb-4"
+              className="w-full bg-gold text-dark-900 border-none rounded-[10px] py-[13px] text-[14px] font-semibold font-sans cursor-pointer hover:bg-gold-light transition-colors mb-4 relative overflow-hidden shine btn-press"
             >
               Sign in
             </button>
@@ -123,7 +133,7 @@ const Login = () => {
 
             <div className="text-center text-[12px] text-muted-faint">
               Don't have an account?{" "}
-              <Link to="/register" className="text-gold cursor-pointer">
+              <Link to="/register" className="text-gold cursor-pointer link-underline">
                 Create one →
               </Link>
             </div>

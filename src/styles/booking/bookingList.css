@@ -8,9 +8,9 @@
 }
 
 .BookingList-navbar button.active {
-    background: #ececec;
-    color: #222;
-    border-color: #fff;
+    background: rgba(201, 169, 110, 0.15);
+    color: var(--color-gold);
+    border-color: rgba(201, 169, 110, 0.4);
     font-weight: 600;
 }
 
@@ -19,18 +19,15 @@
 }
 
 .bookingCard {
-    background: #fff;
+    background: var(--color-dark-800);
     padding: 30px;
     border-radius: 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    border: 1px solid #e6e6e6;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.07);
     margin-bottom: 20px;
-    transition: 0.2s ease;
-    width: 50%;
-}
-
-.bookingCard:hover {
-    box-shadow: 0 4px 14px rgba(0,0,0,0.10);
+    transition: box-shadow 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+    width: 100%;
+    max-width: 640px;
 }
 
 /* --- CARD CONTENT LAYOUT --- */
@@ -48,8 +45,8 @@
 .bookingCard-info h5 {
     margin: 2px 0;
     font-size: 0.95rem;
-    color: #333;
-    font-weight: 600;
+    color: var(--color-primary);
+    font-weight: 500;
 }
 
 /* Top title section (Property name) */
@@ -58,48 +55,55 @@
     font-weight: 700;
     grid-column: span 4;
     margin-bottom: 4px;
+    color: var(--color-primary);
 }
 
 /* Status Badges */
 .status-badge {
     padding: 5px 10px;
-    border-radius: 8px;
+    border-radius: 9999px;
     font-weight: 600;
     font-size: 0.8rem;
     display: inline-block;
     width: fit-content;
+    transition: opacity 0.2s ease;
 }
 
 .status-pending {
-    background: #fff4d6;
-    color: #c89c00;
+    background: rgba(201, 169, 110, 0.12);
+    color: var(--color-gold);
+    border: 1px solid rgba(201, 169, 110, 0.3);
 }
 
 .status-approved {
-    background: #d8f5d8;
-    color: #287d3c;
+    background: rgba(52, 211, 153, 0.1);
+    color: #34d399;
+    border: 1px solid rgba(52, 211, 153, 0.25);
 }
 
 .status-declined {
-    background: #ffe0e0;
-    color: #c0392b;
+    background: rgba(248, 113, 113, 0.1);
+    color: #f87171;
+    border: 1px solid rgba(248, 113, 113, 0.25);
 }
 
 /* Payment badge */
 .payment-pending {
-    background: #ffe9d6;
-    color: #d17a00;
+    background: rgba(251, 191, 36, 0.1);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.25);
 }
 
 /* Special request label */
 .special-request {
-    background: #f2f2ff;
-    color: #4b47c2;
+    background: rgba(139, 92, 246, 0.1);
+    color: #a78bfa;
     padding: 4px 10px;
     border-radius: 8px;
     font-size: 0.8rem;
     font-weight: 600;
     width: fit-content;
+    border: 1px solid rgba(139, 92, 246, 0.25);
 }
 
 /* --- ACTION BUTTONS --- */
@@ -109,19 +113,71 @@
     flex-wrap: wrap;
 }
 
+.btn-outline {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--color-muted);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.btn-outline:hover {
+    background: rgba(201, 169, 110, 0.08);
+    border-color: rgba(201, 169, 110, 0.3);
+    color: var(--color-gold);
+}
+
+.btn-success {
+    background: rgba(52, 211, 153, 0.1);
+    border: 1px solid rgba(52, 211, 153, 0.3);
+    color: #34d399;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-success:hover {
+    background: rgba(52, 211, 153, 0.2);
+    border-color: rgba(52, 211, 153, 0.5);
+}
+
+.btn-danger {
+    background: rgba(248, 113, 113, 0.1);
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    color: #f87171;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-danger:hover {
+    background: rgba(248, 113, 113, 0.2);
+    border-color: rgba(248, 113, 113, 0.5);
+}
+
 /* PENDING */
 .booking-status.PENDING {
-  color: #b45309;
+  color: var(--color-gold);
 }
 
 /* APPROVED */
 .booking-status.APPROVED {
-  color: #047857;
+  color: #34d399;
 }
 
 /* COMPLETED */
 .booking-status.COMPLETED {
-  color: #166534;
+  color: #6ee7b7;
 }
 
 /* CANCELLED */
@@ -131,18 +187,23 @@
 
 /* REJECTED */
 .booking-status.REJECTED {
-  color: #b91c1c;
+  color: #f87171;
 }
 
 /* NO SHOW */
 .booking-status.NOSHOW {
-  color: #9f1239;
+  color: #fb7185;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
     .bookingCard-info {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .bookingCard {
+        max-width: 100%;
+        padding: 20px;
     }
 }
 

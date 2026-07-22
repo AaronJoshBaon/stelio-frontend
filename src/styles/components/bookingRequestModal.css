@@ -274,15 +274,14 @@
 
 .booking-modal-exit {
     animation: modalFadeOut 0.25s ease forwards;
+    pointer-events: none;
 }
 
 @keyframes modalFadeOut {
     from {
         opacity: 1;
-        transform: translate(-50%, -50%);
     }
     to {
         opacity: 0;
-        transform: translate(-50%, -45%);
     }
 }

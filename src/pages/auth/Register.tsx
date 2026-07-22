@@ -51,7 +51,6 @@ const Register = () => {
     } catch (err: any) {
       e.preventDefault();
       setMessage(err.message);
-      console.log(err.message);
       setIsError(true);
     }
   };
@@ -77,10 +76,10 @@ const Register = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-[90vh] bg-dark-800" id="sc-register">
-      <div className="flex items-center justify-center p-8">
-        <div className="bg-dark-700 border border-white/[0.09] rounded-[16px] px-10 py-9 w-full max-w-[440px]">
-          <h1 className="font-serif text-[26px] text-[#e8e6e1] mb-1.5">
+    <div className="min-h-[90vh] bg-dark-800 animated-gradient" id="sc-register">
+      <div className="flex items-center justify-center min-h-[90vh] p-4 sm:p-8">
+        <div className="bg-dark-700 border border-white/[0.09] rounded-[16px] px-6 py-7 sm:px-10 sm:py-9 w-full max-w-[440px] animate-scaleIn">
+          <h1 className="font-serif text-[26px] text-primary mb-1.5 text-gradient-gold">
             Create account
           </h1>
           <p className="text-[13px] text-muted-faint mb-7">
@@ -89,11 +88,11 @@ const Register = () => {
 
           {message && (
             <h4
-              className={`p-4 rounded-md mb-3 ${isError ? "bg-red-100 text-red-700 border-l-4 border-red-500" : "bg-green-100 text-green-700 border-l-4 border-green-500"}`}
+              className={`p-4 rounded-md mb-3 animate-fadeInDown ${isError ? "bg-red-500/10 text-red-400 border-l-4 border-red-500" : "bg-emerald-500/10 text-emerald-400 border-l-4 border-emerald-500"}`}
             >
               {message}
               {!isError && countdown > 0 && (
-                <span className="ml-2 text-sm text-gray-600">
+                <span className="ml-2 text-sm text-muted-faint">
                   Redirecting to login in {countdown}...
                 </span>
               )}
@@ -101,41 +100,53 @@ const Register = () => {
           )}
 
           <form onSubmit={onSubmit} className="grid gap-3">
-            <div className="grid grid-cols-2 gap-2.5 mb-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-3">
               <div>
-                <div className="text-[11px] text-white uppercase tracking-[0.07em] mb-1.5">
+                <label
+                  htmlFor="register-firstname"
+                  className="block text-[11px] text-white uppercase tracking-[0.07em] mb-1.5"
+                >
                   First name
-                </div>
+                </label>
                 <input
+                  id="register-firstname"
                   type="text"
                   value={firstname}
                   onChange={(e) => setFirstname(e.currentTarget.value)}
                   placeholder="First name"
-                  className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] text-[#e8e6e1] text-[13px] font-sans transition-colors"
+                  className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] text-primary text-[13px] font-sans transition-colors"
                   required
                 />
               </div>
               <div>
-                <div className="text-[11px] text-white uppercase tracking-[0.07em] mb-1.5">
+                <label
+                  htmlFor="register-lastname"
+                  className="block text-[11px] text-white uppercase tracking-[0.07em] mb-1.5"
+                >
                   Last name
-                </div>
+                </label>
                 <input
+                  id="register-lastname"
                   type="text"
                   value={lastname}
                   onChange={(e) => setLastname(e.currentTarget.value)}
                   placeholder="Last name"
-                  className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] text-[#e8e6e1] text-[13px] font-sans transition-colors"
+                  className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] text-primary text-[13px] font-sans transition-colors"
                   required
                 />
               </div>
             </div>
 
             <div className="mb-3">
-              <div className="text-[11px] text-white uppercase tracking-[0.07em] mb-1.5">
+              <label
+                htmlFor="register-email"
+                className="block text-[11px] text-white uppercase tracking-[0.07em] mb-1.5"
+              >
                 Email
-              </div>
+              </label>
               <input
-                className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] text-[#e8e6e1] text-[13px] font-sans transition-colors"
+                id="register-email"
+                className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] text-primary text-[13px] font-sans transition-colors"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.currentTarget.value)}
@@ -145,67 +156,71 @@ const Register = () => {
             </div>
 
             <div className="mb-3">
-              <div className="text-[11px] text-white uppercase tracking-[0.07em] mb-1.5">
+              <label
+                htmlFor="register-password"
+                className="block text-[11px] text-white uppercase tracking-[0.07em] mb-1.5"
+              >
                 Password
-              </div>
+              </label>
               <div className="relative">
                 <input
-                  className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] pr-10 text-[#e8e6e1] text-[13px] font-sans transition-colors"
+                  id="register-password"
+                  className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] pr-10 text-primary text-[13px] font-sans transition-colors"
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.currentTarget.value)}
                   placeholder="Password"
                   required
                 />
-                <span
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-faint text-[14px] cursor-pointer"
+                <button
+                  type="button"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-muted-faint hover-scale"
                   onClick={togglePasswordVisibility}
                 >
-                  {showPassword ? (
-                    <FaEye color="#ffffff" />
-                  ) : (
-                    <FaEyeSlash color="#ffffff" />
-                  )}
-                </span>
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
               </div>
             </div>
 
             <div className="mb-5">
-              <div className="text-[11px] text-white uppercase tracking-[0.07em] mb-1.5">
+              <label
+                htmlFor="register-confirm-password"
+                className="block text-[11px] text-white uppercase tracking-[0.07em] mb-1.5"
+              >
                 Confirm Password
-              </div>
+              </label>
               <div className="relative">
                 <input
-                  className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] pr-10 text-[#e8e6e1] text-[13px] font-sans transition-colors"
+                  id="register-confirm-password"
+                  className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] pr-10 text-primary text-[13px] font-sans transition-colors"
                   type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.currentTarget.value)}
                   placeholder="Confirm password"
                   required
                 />
-                <span
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-faint text-[14px] cursor-pointer"
+                <button
+                  type="button"
+                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-muted-faint hover-scale"
                   onClick={toggleConfirmPasswordVisibility}
                 >
-                  {showConfirmPassword ? (
-                    <FaEye color="#ffffff" />
-                  ) : (
-                    <FaEyeSlash color="#ffffff" />
-                  )}
-                </span>
+                  {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
               </div>
             </div>
 
             <button
               type="submit"
-              className="w-full bg-gold text-dark-900 border-none rounded-[10px] py-[13px] text-[14px] font-semibold font-sans cursor-pointer hover:bg-gold-light transition-colors"
+              className="w-full bg-gold text-dark-900 border-none rounded-[10px] py-[13px] text-[14px] font-semibold font-sans cursor-pointer hover:bg-gold-light transition-colors relative overflow-hidden shine btn-press"
             >
               Create account
             </button>
 
             <div className="text-center text-[12px] text-muted-faint mt-3">
               Already have an account?{" "}
-              <Link to="/login" className="text-gold cursor-pointer">
+              <Link to="/login" className="text-gold cursor-pointer link-underline">
                 Sign in →
               </Link>
             </div>

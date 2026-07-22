@@ -45,9 +45,9 @@ const PropertyForm = () => {
 
   if (loading) {
     return (
-      <div className="s-screen bg-dark-800 min-h-[520px]" id="sc-add">
-        <div className="p-8">
-          <h1 className="text-[#e8e6e1] font-serif text-[20px]">Loading...</h1>
+      <div className="s-screen bg-dark-800 min-h-[520px] animate-fadeIn" id="sc-add">
+        <div className="p-4 sm:p-8">
+          <h1 className="text-primary font-serif text-[20px]">Loading<span className="typing-dots"><span></span><span></span><span></span></span></h1>
         </div>
       </div>
     );
@@ -55,28 +55,28 @@ const PropertyForm = () => {
 
   return (
     <form
-      className="h-[90vh] bg-dark-800 min-h-[520px]"
+      className="min-h-[90vh] overflow-y-auto bg-dark-800 page-enter"
       id="sc-add"
       onSubmit={handleSubmit}
     >
-      <div className="p-8">
-        <div className="flex items-center justify-between mb-5">
-          <h1 className="font-serif text-[20px] text-[#e8e6e1]">
-            Add Property
+      <div className="p-4 sm:p-8">
+        <div className="flex items-center justify-between mb-5 animate-fadeInDown">
+          <h1 className="font-serif text-[20px] text-primary">
+            {id ? "Edit Property" : "Add Property"}
           </h1>
         </div>
 
         <div className="grid place-items-center mb-7 mx-auto">
           <div className="flex items-center mb-2">
-            <div className="w-10 h-10 rounded-full border-[1.5px] border-gold bg-gold/10 text-gold flex items-center justify-center text-[11px] font-medium">
+            <div className="w-10 h-10 rounded-full border-[1.5px] border-gold bg-gold/10 text-gold flex items-center justify-center text-[11px] font-medium animate-scaleIn transition-all duration-300">
               1
             </div>
-            <div className="w-10 h-px bg-white/10"></div>
-            <div className="w-10 h-10 rounded-full border-[1.5px] border-white/[0.15] bg-dark-700 text-muted-faint flex items-center justify-center text-[11px] font-medium">
+            <div className="w-10 h-px bg-white/10 transition-all duration-300"></div>
+            <div className="w-10 h-10 rounded-full border-[1.5px] border-white/[0.15] bg-dark-700 text-muted-faint flex items-center justify-center text-[11px] font-medium transition-all duration-300">
               2
             </div>
-            <div className="w-10 h-px bg-white/10"></div>
-            <div className="w-10 h-10 rounded-full border-[1.5px] border-white/[0.15] bg-dark-700 text-muted-faint flex items-center justify-center text-[11px] font-medium">
+            <div className="w-10 h-px bg-white/10 transition-all duration-300"></div>
+            <div className="w-10 h-10 rounded-full border-[1.5px] border-white/[0.15] bg-dark-700 text-muted-faint flex items-center justify-center text-[11px] font-medium transition-all duration-300">
               3
             </div>
           </div>
@@ -85,13 +85,14 @@ const PropertyForm = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 stagger-children">
           <div>
-            <label className="text-[11px] text-muted-dim uppercase tracking-[0.07em] mb-1.5">
+            <label htmlFor="prop-title" className="text-[11px] text-muted-dim uppercase tracking-[0.07em] mb-1.5">
               Title
             </label>
             <input
-              className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] text-[#e8e6e1] text-[13px] font-sans transition-colors"
+              id="prop-title"
+              className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] text-primary text-[13px] font-sans transition-colors"
               placeholder="e.g. Cozy Studio in BGC"
               value={property.title}
               onChange={(e) =>
@@ -102,11 +103,12 @@ const PropertyForm = () => {
           </div>
 
           <div>
-            <label className="text-[11px] text-muted-dim uppercase tracking-[0.07em] mb-1.5">
+            <label htmlFor="prop-price" className="text-[11px] text-muted-dim uppercase tracking-[0.07em] mb-1.5">
               Price per night (₱)
             </label>
             <input
-              className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] text-[#e8e6e1] text-[13px] font-sans transition-colors"
+              id="prop-price"
+              className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] text-primary text-[13px] font-sans transition-colors"
               type="text"
               inputMode="numeric"
               value={property.price}
@@ -118,11 +120,12 @@ const PropertyForm = () => {
           </div>
 
           <div>
-            <label className="text-[11px] text-muted-dim uppercase tracking-[0.07em] mb-1.5">
+            <label htmlFor="prop-address" className="text-[11px] text-muted-dim uppercase tracking-[0.07em] mb-1.5">
               Address
             </label>
             <input
-              className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] text-[#e8e6e1] text-[13px] font-sans transition-colors"
+              id="prop-address"
+              className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] text-primary text-[13px] font-sans transition-colors"
               value={property.address}
               onChange={(e) =>
                 setProperty((prev) => ({ ...prev, address: e.target.value }))
@@ -132,11 +135,12 @@ const PropertyForm = () => {
           </div>
 
           <div>
-            <label className="text-[11px] text-muted-dim uppercase tracking-[0.07em] mb-1.5">
+            <label htmlFor="prop-city" className="text-[11px] text-muted-dim uppercase tracking-[0.07em] mb-1.5">
               City
             </label>
             <input
-              className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] text-[#e8e6e1] text-[13px] font-sans transition-colors"
+              id="prop-city"
+              className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] text-primary text-[13px] font-sans transition-colors"
               value={property.city}
               onChange={(e) =>
                 setProperty((prev) => ({ ...prev, city: e.target.value }))
@@ -146,11 +150,12 @@ const PropertyForm = () => {
           </div>
 
           <div>
-            <label className="text-[11px] text-muted-dim uppercase tracking-[0.07em] mb-1.5">
+            <label htmlFor="prop-type" className="text-[11px] text-muted-dim uppercase tracking-[0.07em] mb-1.5">
               Property Type
             </label>
             <select
-              className="w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] text-[#e8e6e1] text-[13px] font-sans outline-none cursor-pointer"
+              id="prop-type"
+              className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] text-primary text-[13px] font-sans outline-none cursor-pointer"
               value={property.propertyType}
               onChange={(e) =>
                 setProperty((prev) => ({
@@ -171,13 +176,14 @@ const PropertyForm = () => {
             </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] text-muted-dim uppercase tracking-[0.07em] mb-1.5">
+              <label htmlFor="prop-maxguest" className="text-[11px] text-muted-dim uppercase tracking-[0.07em] mb-1.5">
                 Max guests
               </label>
               <input
-                className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] text-[#e8e6e1] text-[13px] font-sans transition-colors"
+                id="prop-maxguest"
+                className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] text-primary text-[13px] font-sans transition-colors"
                 value={property.maxGuest}
                 onChange={(e) =>
                   setProperty((prev) => ({
@@ -189,11 +195,12 @@ const PropertyForm = () => {
               />
             </div>
             <div>
-              <label className="text-[11px] text-muted-dim uppercase tracking-[0.07em] mb-1.5">
+              <label htmlFor="prop-bedrooms" className="text-[11px] text-muted-dim uppercase tracking-[0.07em] mb-1.5">
                 Bedrooms
               </label>
               <input
-                className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] text-[#e8e6e1] text-[13px] font-sans transition-colors"
+                id="prop-bedrooms"
+                className="s-input w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-[11px] text-primary text-[13px] font-sans transition-colors"
                 value={property.totalBedroom}
                 onChange={(e) =>
                   setProperty((prev) => ({
@@ -206,12 +213,13 @@ const PropertyForm = () => {
             </div>
           </div>
 
-          <div className="col-span-2">
-            <label className="text-[11px] text-muted-dim uppercase tracking-[0.07em] mb-1.5">
+          <div className="sm:col-span-2">
+            <label htmlFor="prop-description" className="text-[11px] text-muted-dim uppercase tracking-[0.07em] mb-1.5">
               Description
             </label>
             <textarea
-              className="s-textarea w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-3 text-[#e8e6e1] text-[13px] font-sans resize-y min-h-[110px] transition-colors"
+              id="prop-description"
+              className="s-textarea w-full bg-dark-900 border border-white/10 rounded-lg px-[14px] py-3 text-primary text-[13px] font-sans resize-y min-h-[110px] transition-colors"
               placeholder="Describe your property..."
               value={property.description}
               onChange={(e) =>
@@ -235,7 +243,7 @@ const PropertyForm = () => {
           </button>
           <button
             type="submit"
-            className="bg-gold border-none text-dark-900 rounded-[9px] px-7 py-[11px] text-[13px] font-semibold font-sans cursor-pointer hover:bg-gold-light transition-colors"
+            className="relative overflow-hidden shine btn-press bg-gold border-none text-dark-900 rounded-[9px] px-7 py-[11px] text-[13px] font-semibold font-sans cursor-pointer hover:bg-gold-light transition-colors"
           >
             Next → Photos
           </button>

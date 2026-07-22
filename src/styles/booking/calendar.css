@@ -1,62 +1,89 @@
+/* ── Booking Calendar — Dark / Gold Luxury Theme ── */
+
 /* Container */
 .booking-calendar {
-  background: #ffffff;
+  background: var(--color-dark-900);
   border-radius: 16px;
   padding: 25px 35px;
   width: 70%;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e0e0e0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   text-align: center;
   display: grid;
+  transition: box-shadow 0.3s ease;
 }
 
-/* Override default calendar tiles */
+/* Day tiles */
 .booking-calendar .react-calendar__tile {
   padding: 15px 0;
-  transition: 0.25s ease;
-  border: 1px solid #d0d7e0;
-  background-color: #fff;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: transparent;
+  color: var(--color-primary);
+  border-radius: 6px;
 }
 
-/* Hover effect */
-.booking-calendar .react-calendar__tile:hover {
-  background: #fff;
-  border-color: #d0d7e0;
-  transform: translateY(-2px);
+/* Hover on day tiles */
+.booking-calendar .react-calendar__tile:enabled:hover {
+  background: rgba(201, 169, 110, 0.12);
+  border-color: rgba(201, 169, 110, 0.3);
+  color: var(--color-gold);
+  transform: translateY(-1px);
   cursor: pointer;
 }
 
-/* Active (clicked) tile */
+/* Focus state */
+.booking-calendar .react-calendar__tile:enabled:focus-visible {
+  background: rgba(201, 169, 110, 0.18);
+  border-color: rgba(201, 169, 110, 0.4);
+  outline: 2px solid rgba(201, 169, 110, 0.7);
+  outline-offset: 2px;
+}
+
+/* Active / selected tile */
 .booking-calendar .react-calendar__tile--active {
-  background: #3b82f6 !important;     /* Tailwind primary blue */
-  color: #ffffff !important;
-  border-color: #3b82f6;
+  background: var(--color-gold) !important;
+  color: var(--color-dark-900) !important;
+  border-color: var(--color-gold) !important;
+  font-weight: 700;
+  box-shadow: 0 2px 10px rgba(201, 169, 110, 0.35);
+}
+
+.booking-calendar .react-calendar__tile--active:enabled:hover {
+  background: var(--color-gold-light) !important;
+  color: var(--color-dark-900) !important;
+  transform: translateY(-1px);
+}
+
+/* Range start / end */
+.booking-calendar .react-calendar__tile--rangeStart,
+.booking-calendar .react-calendar__tile--rangeEnd {
+  background: var(--color-gold) !important;
+  color: var(--color-dark-900) !important;
+  border-color: var(--color-gold) !important;
+  font-weight: 700;
+}
+
+/* Range fill */
+.booking-calendar .react-calendar__tile--range {
+  background: rgba(201, 169, 110, 0.15) !important;
+  color: #c9a96e !important;
+  border-radius: 0;
 }
 
 /* Today highlight */
 .booking-calendar .react-calendar__tile--now {
-  background: #fee2e2;                 /* light red */
-  border-color: #fca5a5;
-}
-
-/* Navigation Buttons */
-.booking-calendar .react-calendar__navigation button {
-  color: #374151;
-  font-size: 16px;
-  border-radius: 8px;
-  transition: 0.2s;
-  cursor: pointer;
-}
-
-/* Weekday labels */
-.booking-calendar .react-calendar__month-view__weekdays__weekday {
+  background: rgba(201, 169, 110, 0.08);
+  border-color: rgba(201, 169, 110, 0.35) !important;
+  color: var(--color-gold);
   font-weight: 600;
-  color: #6b7280;
-  text-transform: uppercase;
-  padding: 8px;
 }
 
-/* Navigation Container */
+.booking-calendar .react-calendar__tile--now:enabled:hover {
+  background: rgba(201, 169, 110, 0.2);
+}
+
+/* Navigation container */
 .booking-calendar .react-calendar__navigation {
   display: flex;
   align-items: center;
@@ -64,24 +91,81 @@
   margin-bottom: 15px;
 }
 
-/* Navigation Buttons (arrows + month/year label) */
+/* Navigation buttons (arrows + month/year label) */
 .booking-calendar .react-calendar__navigation button {
   background: none;
   border: none;
   font-size: 18px;
   padding: 10px 12px;
   border-radius: 8px;
-  color: #374151;
-  transition: 0.2s;
+  color: var(--color-muted);
+  transition: background 0.2s ease, color 0.2s ease;
   font-weight: 500;
   cursor: pointer;
 }
-/* The main month label: “December 2025” */
+
+.booking-calendar .react-calendar__navigation button:enabled:hover {
+  background: rgba(201, 169, 110, 0.1);
+  color: var(--color-gold);
+}
+
+.booking-calendar .react-calendar__navigation button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Main month/year label */
 .booking-calendar .react-calendar__navigation__label {
   flex-grow: 1;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   text-align: center;
-  color: #1f2937;
+  color: var(--color-primary);
   cursor: default !important;
+  letter-spacing: 0.01em;
+}
+
+.booking-calendar .react-calendar__navigation__label:enabled:hover {
+  background: transparent;
+  color: var(--color-primary);
+}
+
+/* Weekday labels */
+.booking-calendar .react-calendar__month-view__weekdays__weekday {
+  font-weight: 600;
+  color: var(--color-muted-faint);
+  text-transform: uppercase;
+  padding: 8px;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+
+.booking-calendar .react-calendar__month-view__weekdays__weekday abbr {
+  text-decoration: none;
+}
+
+/* Neighboring month days — dimmed */
+.booking-calendar .react-calendar__month-view__days__day--neighboringMonth {
+  opacity: 0.25;
+}
+
+/* Weekend days — subtle gold tint */
+.booking-calendar .react-calendar__month-view__days__day--weekend {
+  color: var(--color-gold-light);
+}
+
+@media (max-width: 640px) {
+  .booking-calendar {
+    width: 100%;
+    padding: 16px;
+  }
+
+  .booking-calendar .react-calendar__navigation button {
+    padding: 12px 14px;
+    min-height: 44px;
+  }
+
+  .booking-calendar .react-calendar__tile {
+    padding: 10px 0;
+  }
 }

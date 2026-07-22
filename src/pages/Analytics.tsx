@@ -1,11 +1,20 @@
+import { useState, useEffect } from 'react';
+
 const Analytics = () => {
+  const [barsVisible, setBarsVisible] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setBarsVisible(true), 50);
+    return () => clearTimeout(t);
+  }, []);
+
   return (
-    <div className=" s-screen bg-dark-800 min-h-[520px] p-8 animate-fadeIn">
+    <div className="s-screen bg-dark-800 min-h-[520px] p-4 sm:p-6 lg:p-8 page-enter">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="font-serif text-[24px] text-white">
+        <h2 className="font-serif text-[24px] text-white text-gradient-gold">
           Analytics Dashboard
         </h2>
-        <select className="bg-dark-700 border border-white/10 rounded-lg px-4 py-2 text-[13px] text-muted outline-none">
+        <select className="s-input bg-dark-700 border border-white/10 rounded-lg px-4 py-2 text-[13px] text-muted outline-none">
           <option>Last 30 Days</option>
           <option>Last 90 Days</option>
           <option>Last 6 Months</option>
@@ -13,8 +22,8 @@ const Analytics = () => {
         </select>
       </div>
 
-      <div className="grid grid-cols-4 gap-4 mb-6">
-        <div className="bg-dark-700 border border-white/[0.07] rounded-2xl p-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 stagger-children">
+        <div className="bg-dark-700 border border-white/[0.07] rounded-2xl p-6 card-interactive">
           <div className="text-[11px] text-muted-faint uppercase tracking-widest mb-2">
             Average Nightly Rate
           </div>
@@ -23,7 +32,7 @@ const Analytics = () => {
           </div>
           <div className="text-[11px] text-emerald-400">+₱250 from avg</div>
         </div>
-        <div className="bg-dark-700 border border-white/[0.07] rounded-2xl p-6">
+        <div className="bg-dark-700 border border-white/[0.07] rounded-2xl p-6 card-interactive">
           <div className="text-[11px] text-muted-faint uppercase tracking-widest mb-2">
             Average Stay Duration
           </div>
@@ -32,7 +41,7 @@ const Analytics = () => {
           </div>
           <div className="text-[11px] text-muted-faint">nights per booking</div>
         </div>
-        <div className="bg-dark-700 border border-white/[0.07] rounded-2xl p-6">
+        <div className="bg-dark-700 border border-white/[0.07] rounded-2xl p-6 card-interactive">
           <div className="text-[11px] text-muted-faint uppercase tracking-widest mb-2">
             Guest Satisfaction
           </div>
@@ -43,7 +52,7 @@ const Analytics = () => {
             Based on 47 reviews
           </div>
         </div>
-        <div className="bg-dark-700 border border-white/[0.07] rounded-2xl p-6">
+        <div className="bg-dark-700 border border-white/[0.07] rounded-2xl p-6 card-interactive">
           <div className="text-[11px] text-muted-faint uppercase tracking-widest mb-2">
             Repeat Guest Rate
           </div>
@@ -56,13 +65,13 @@ const Analytics = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-6 mb-6">
-        <div className="col-span-2 bg-dark-700 border border-white/[0.07] rounded-2xl p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 stagger-children">
+        <div className="lg:col-span-2 bg-dark-700 border border-white/[0.07] rounded-2xl p-6">
           <h3 className="font-serif text-[20px] text-white mb-6">
             Revenue Trends
           </h3>
           <div className="h-[350px] flex items-center justify-center border-2 border-dashed border-white/[0.08] rounded-xl">
-            <div className="text-center">
+            <div className="text-center animate-fadeIn">
               <div className="text-[48px] text-muted-ghost mb-3">📊</div>
               <p className="text-[13px] text-muted-faint">
                 Revenue trend chart
@@ -82,7 +91,9 @@ const Analytics = () => {
                 <span className="text-[12px] text-gold font-medium">₱85k</span>
               </div>
               <div className="w-full h-2 bg-dark-900 rounded-full overflow-hidden">
-                <div className="h-full bg-gold w-[60%]"></div>
+                <div
+                  className={`h-full bg-gold transition-all duration-1000 ${barsVisible ? 'w-[60%]' : 'w-0'}`}
+                ></div>
               </div>
             </div>
 
@@ -94,7 +105,9 @@ const Analytics = () => {
                 <span className="text-[12px] text-gold font-medium">₱52k</span>
               </div>
               <div className="w-full h-2 bg-dark-900 rounded-full overflow-hidden">
-                <div className="h-full bg-gold w-[37%]"></div>
+                <div
+                  className={`h-full bg-gold transition-all duration-1000 ${barsVisible ? 'w-[37%]' : 'w-0'}`}
+                ></div>
               </div>
             </div>
 
@@ -104,7 +117,7 @@ const Analytics = () => {
                 <span className="text-[12px] text-gold font-medium">₱0</span>
               </div>
               <div className="w-full h-2 bg-dark-900 rounded-full overflow-hidden">
-                <div className="h-full bg-gold w-[0%]"></div>
+                <div className="h-full bg-gold w-0 transition-all duration-1000"></div>
               </div>
             </div>
           </div>

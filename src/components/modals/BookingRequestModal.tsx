@@ -83,8 +83,9 @@ const BookingRequestModal = ({
   };
 
   const handleContactInput = (contact: string) => {
-    if (contact.trim() === "") return;
-    if (error === "contact") setError("");
+    // Always propagate the value (including empty) so the controlled input
+    // can be cleared; only clear the error once there's actual input.
+    if (error === "contact" && contact.trim() !== "") setError("");
 
     action.updateBooking({ ...data.booking, contactPhone: contact });
   };
@@ -103,20 +104,20 @@ const BookingRequestModal = ({
 
   return (
     <div
-      className={`s-modal-bg absolute inset-0 bg-black/70 items-center justify-center z-[200] ${
+      className={`s-modal-bg flex animate-fadeIn absolute inset-0 bg-black/70 items-center justify-center z-[200] ${
         isClosing ? "booking-modal-exit" : ""
       }`}
       onClick={action.onClose}
     >
       <div
-        className="m-auto bg-dark-800 border border-white/[0.1] rounded-2xl w-[520px] max-w-[92%] relative overflow-hidden"
+        className="m-auto animate-scaleIn bg-dark-800 border border-white/[0.1] rounded-2xl w-[520px] max-w-[92%] relative overflow-hidden"
         style={{ boxShadow: "0 32px 80px rgba(0,0,0,0.6)" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal header with gold accent bar */}
         <div className="h-[3px] w-full bg-gradient-to-r from-gold to-gold-dark"></div>
 
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           {/* Title row */}
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -132,14 +133,15 @@ const BookingRequestModal = ({
                 setIsClosing(true);
                 action.onClose();
               }}
-              className="w-8 h-8 rounded-full bg-white/[0.07] border border-white/[0.1] text-muted-faint cursor-pointer flex items-center justify-center text-[13px] hover:bg-white/[0.12] hover:text-[#e8e6e1] transition-all"
+              aria-label="Close modal"
+              className="hover-scale w-11 h-11 rounded-full bg-white/[0.07] border border-white/[0.1] text-muted-faint cursor-pointer flex items-center justify-center text-[13px] hover:bg-white/[0.12] hover:text-[#e8e6e1] transition-all flex-shrink-0"
             >
               <IoMdClose />
             </button>
           </div>
 
           {/* Property summary card */}
-          <div className="bg-dark-900 border border-white/[0.07] rounded-xl p-4 mb-5 flex items-center gap-4">
+          <div className="animate-fadeInUp bg-dark-900 border border-white/[0.07] rounded-xl p-4 mb-5 flex items-center gap-4">
             <img
               src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=80&h=80&fit=crop"
               className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
@@ -161,14 +163,14 @@ const BookingRequestModal = ({
           </div>
 
           {/* Stay duration row */}
-          <div className="grid grid-cols-3 gap-3 mb-5">
+          <div className="stagger-children grid grid-cols-3 gap-3 mb-5">
             <div className="bg-dark-900 border border-white/[0.07] rounded-xl p-3 col-span-1">
               <div className="text-[10px] text-muted-faint uppercase tracking-widest mb-1">
                 Check-in
               </div>
               <div className="text-[13px] font-medium text-[#e8e6e1]">
                 {toMonthStr(data.booking.start.getMonth() + 1)}{" "}
-                {data.booking.start.getUTCDate()}
+                {data.booking.start.getDate()}
               </div>
               <div className="text-[11px] text-muted-faint">
                 {data.booking.start.getFullYear()}
@@ -187,7 +189,7 @@ const BookingRequestModal = ({
               </div>
               <div className="text-[13px] font-medium text-[#e8e6e1]">
                 {toMonthStr(data.booking.end.getMonth() + 1)}{" "}
-                {data.booking.end.getUTCDate()}
+                {data.booking.end.getDate()}
               </div>
               <div className="text-[11px] text-muted-faint">
                 {data.booking.end.getFullYear()}
@@ -201,7 +203,7 @@ const BookingRequestModal = ({
               Contact Number
             </label>
             {error === "contact" && (
-              <p className="text-[red] text-[11px]">Phone Number is required</p>
+              <p className="text-red-400 text-[11px]">Phone Number is required</p>
             )}
             <input
               className={`s-input w-full bg-dark-900 border rounded-xl px-4 py-3 text-[#e8e6e1] text-[13px] font-sans transition-colors ${
@@ -209,7 +211,7 @@ const BookingRequestModal = ({
               }`}
               placeholder="09XX XXX XXXX"
               type="tel"
-              pattern="09\d{2} \d{3} \d{3}"
+              pattern="09\d{2} \d{3} \d{4}"
               onChange={(e) => handleContactInput(e.target.value)}
               value={data.booking.contactPhone ?? ""}
             />
@@ -232,6 +234,9 @@ const BookingRequestModal = ({
                   <span
                     className="text-muted-ghost cursor-pointer hover:text-muted-faint ml-0.5 text-[11px]"
                     onClick={() => {
+                      // Removing a guest clears the empty-guest lock so the
+                      // "Add guest" button can't stay permanently disabled.
+                      setEmptyGuestName(null);
                       action.updateBooking({
                         ...data.booking,
                         guestNames: data.booking.guestNames
@@ -257,7 +262,7 @@ const BookingRequestModal = ({
           </div>
 
           {/* Price breakdown */}
-          <div className="space-y-2 mb-4">
+          <div className="stagger-children space-y-2 mb-4">
             <div className="flex justify-between text-[13px]">
               <span className="text-muted-faint">
                 {formatPHP(data.property.price)} ×{" "}
@@ -273,7 +278,7 @@ const BookingRequestModal = ({
             </div>
             <div className="flex justify-between text-[13px]">
               <span className="text-muted-faint">Service fee</span>
-              <span className="text-[#e6e6e6]">₱0</span>
+              <span className="text-[#e8e6e1]">₱0</span>
             </div>
           </div>
 
@@ -289,7 +294,7 @@ const BookingRequestModal = ({
 
           {/* CTA */}
           <button
-            className="w-full bg-gold text-dark-900 border-none rounded-xl py-[14px] text-[14px] font-semibold cursor-pointer hover:bg-gold-light transition-colors tracking-wide"
+            className="relative overflow-hidden shine btn-press w-full bg-gold text-dark-900 border-none rounded-xl py-[14px] text-[14px] font-semibold cursor-pointer hover:bg-gold-light transition-colors tracking-wide"
             onClick={handleValidation}
             disabled={
               error.trim() !== "" ||

@@ -4,6 +4,7 @@ import { deleteProperty, getMyProperties } from "../../api/property";
 import type { PropertyTypesView } from "../../pages/property/Propertytypes";
 import { propertyData, useProperty } from "../../context/PropertyContext";
 import { FaPencil, FaRegTrashCan } from "react-icons/fa6";
+import EmptyState from "../../components/common/EmptyState";
 
 const ManageProperty = () => {
   const navigate = useNavigate();
@@ -18,6 +19,10 @@ const ManageProperty = () => {
   const handleOnDelete = async (propertyId: string | undefined) => {
     if (!propertyId) {
       throw new Error("Property ID is missing in search params");
+    }
+
+    if (!window.confirm("Are you sure you want to delete this property?")) {
+      return;
     }
 
     const res = await deleteProperty(propertyId);
@@ -46,7 +51,6 @@ const ManageProperty = () => {
         setCurrentPage(res.properties.pageable.pageNumber);
         setTotalPages(res.properties.totalPages);
 
-        console.log(res.properties);
         setLoading(false);
       }
     };
@@ -56,27 +60,27 @@ const ManageProperty = () => {
 
   if (loading) {
     return (
-      <div className="s-screen bg-dark-800 min-h-[520px] p-8">
-        <h1 className="font-serif text-[20px] text-[#e8e6e1]">Loading...</h1>
+      <div className="s-screen bg-dark-800 min-h-[520px] p-4 sm:p-6 lg:p-8 animate-fadeIn">
+        <h1 className="font-serif text-[20px] text-primary">Loading<span className="typing-dots"><span></span><span></span><span></span></span></h1>
       </div>
     );
   }
 
   return (
-    <div className="s-screen bg-dark-800 min-h-[520px] p-8 animate-fadeIn">
+    <div className="s-screen bg-dark-800 min-h-[520px] p-4 sm:p-6 lg:p-8 page-enter">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6 animate-fadeInDown">
         <h2 className="font-serif text-[24px] text-white">My Properties</h2>
 
-        <div className="flex gap-3">
-          <select className="bg-dark-700 border border-white/10 rounded-lg px-4 py-2 text-[13px] text-muted outline-none">
+        <div className="flex flex-wrap gap-2">
+          <select className="s-input bg-dark-700 border border-white/10 rounded-lg px-4 py-2 text-[13px] text-muted outline-none">
             <option>All Types</option>
             <option>Condo</option>
             <option>House</option>
             <option>Villa</option>
           </select>
 
-          <select className="bg-dark-700 border border-white/10 rounded-lg px-4 py-2 text-[13px] text-muted outline-none">
+          <select className="s-input bg-dark-700 border border-white/10 rounded-lg px-4 py-2 text-[13px] text-muted outline-none">
             <option>All Status</option>
             <option>Active</option>
             <option>Maintenance</option>
@@ -86,12 +90,12 @@ const ManageProperty = () => {
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-6">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(min(280px,100%),1fr))] gap-6 stagger-children">
         {properties.length > 0 &&
           properties.map((property) => (
             <div
               key={property.id}
-              className="bg-dark-700 border border-white/[0.07] rounded-2xl overflow-hidden hover:border-gold/30 transition-all group"
+              className="bg-dark-700 border border-white/[0.07] rounded-2xl overflow-hidden card-interactive"
             >
               {/* Image */}
               <div className="relative h-[200px] overflow-hidden">
@@ -99,8 +103,8 @@ const ManageProperty = () => {
                   src={imageBaseUrl + "/" + property.imageUrl}
                   alt={property.title || "Property Image"}
                   loading="lazy"
-                  decoding="sync"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  decoding="async"
+                  className="w-full h-full object-cover zoom-img"
                 />
 
                 {/* Status badge (static for now) */}
@@ -118,10 +122,10 @@ const ManageProperty = () => {
                 </h3>
 
                 <div className="text-[12px] text-muted-faint mb-4">
-                  📍 Location
+                  📍 {property.address || "—"}
                 </div>
 
-                {/* Stats (placeholder since original logic doesn't have these) */}
+                {/* Stats */}
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <div className="text-[10px] text-muted-faint mb-1">
@@ -149,7 +153,7 @@ const ManageProperty = () => {
                       Status
                     </div>
                     <div className="text-[14px] text-white font-medium">
-                      Live
+                      —
                     </div>
                   </div>
                 </div>
@@ -158,14 +162,14 @@ const ManageProperty = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleOnEdit(property.id)}
-                    className="flex-1 bg-dark-900 border border-white/10 text-muted px-4 py-2 rounded-lg text-[12px] hover:bg-dark-800 transition-colors flex items-center justify-center gap-1"
+                    className="flex-1 bg-dark-900 border border-white/10 text-muted px-4 py-2 rounded-lg text-[12px] hover:bg-dark-800 transition-colors flex items-center justify-center gap-1 btn-press"
                   >
                     <FaPencil /> Manage
                   </button>
 
                   <button
                     onClick={() => handleOnDelete(property.id)}
-                    className="flex-1 bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-2 rounded-lg text-[12px] hover:bg-red-500/20 transition-colors flex items-center justify-center gap-1"
+                    className="flex-1 bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-2 rounded-lg text-[12px] hover:bg-red-500/20 transition-colors flex items-center justify-center gap-1 btn-press"
                   >
                     <FaRegTrashCan /> Delete
                   </button>
@@ -173,31 +177,22 @@ const ManageProperty = () => {
               </div>
             </div>
           ))}
-
-        {/* Add Property Card */}
-        {/* <div
-          onClick={() => navigate("/property/form/")}
-          className="bg-dark-700 border-2 border-dashed border-white/10 rounded-2xl flex items-center justify-center min-h-[300px] hover:border-gold/30 transition-all cursor-pointer group"
-        >
-          <div className="text-center">
-            <div className="w-16 h-16 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-              <span className="text-gold text-[24px]">+</span>
-            </div>
-            <h3 className="text-[16px] font-medium text-white mb-2">
-              Add New Property
-            </h3>
-            <p className="text-[13px] text-muted-faint">
-              List a new property to start earning
-            </p>
-          </div>
-        </div> */}
       </div>
+
+      {properties.length == 0 && (
+        <EmptyState
+          title="No properties yet"
+          description="You haven't listed any properties. Add your first one to start earning."
+          cta={{ label: "Add New Property", href: "/property/form" }}
+        />
+      )}
+
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 mt-8">
           <button
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
             disabled={currentPage === 0}
-            className="w-9 h-9 rounded-full border border-white/[0.12] text-muted text-[13px] flex items-center justify-center bg-transparent cursor-pointer hover:bg-gold/15 hover:border-gold hover:text-gold transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:border-white/[0.12] disabled:hover:text-muted"
+            className="w-9 h-9 rounded-full border border-white/[0.12] text-muted text-[13px] flex items-center justify-center bg-transparent cursor-pointer hover:bg-gold/15 hover:border-gold hover:text-gold transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:border-white/[0.12] disabled:hover:text-muted hover-scale"
           >
             ←
           </button>
@@ -238,7 +233,7 @@ const ManageProperty = () => {
               setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))
             }
             disabled={currentPage === totalPages - 1}
-            className="w-9 h-9 rounded-full border border-white/[0.12] text-muted text-[13px] flex items-center justify-center bg-transparent cursor-pointer hover:bg-gold/15 hover:border-gold hover:text-gold transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:border-white/[0.12] disabled:hover:text-muted"
+            className="w-9 h-9 rounded-full border border-white/[0.12] text-muted text-[13px] flex items-center justify-center bg-transparent cursor-pointer hover:bg-gold/15 hover:border-gold hover:text-gold transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:border-white/[0.12] disabled:hover:text-muted hover-scale"
           >
             →
           </button>

@@ -23,13 +23,13 @@ const BookingCard = ({ bookingInfo, actions }: BookingCardProps) => {
     PENDING: (
       <>
         <button
-          className="btn-success"
+          className="btn-success btn-press"
           onClick={() => actions.update(bookingInfo.id, BookingStatus.APPROVED)}
         >
           Approve
         </button>
         <button
-          className="btn-danger"
+          className="btn-danger btn-press"
           onClick={() => actions.update(bookingInfo.id, BookingStatus.REJECTED)}
         >
           Decline
@@ -39,7 +39,7 @@ const BookingCard = ({ bookingInfo, actions }: BookingCardProps) => {
   };
 
   return (
-    <div className="bookingCard">
+    <div className="bookingCard card-interactive animate-cardFadeIn">
       <div className="bookingCard-info">
         <h5>🏠 {bookingInfo.title}</h5>
 
@@ -62,7 +62,7 @@ const BookingCard = ({ bookingInfo, actions }: BookingCardProps) => {
           <h5>Payment: {bookingInfo.paymentStatus}</h5>
           <h5>
             Status:{" "}
-            <span className={`booking-status ${bookingInfo.status}`}>
+            <span className={`booking-status ${bookingInfo.status} animate-scaleIn`}>
               {bookingInfo.status}
             </span>
           </h5>
@@ -72,8 +72,8 @@ const BookingCard = ({ bookingInfo, actions }: BookingCardProps) => {
       </div>
 
       <div className="bookingCard-actions">
-        <button className="btn-outline">Message Guest</button>
-        <button className="btn-outline">View Details</button>
+        <button className="btn-outline btn-press shine">Message Guest</button>
+        <button className="btn-outline btn-press">View Details</button>
         {statusButtonMap[bookingInfo.status]}
       </div>
     </div>

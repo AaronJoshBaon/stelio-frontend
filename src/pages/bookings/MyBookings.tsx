@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import MyBookingCard from "../../components/booking/MyBookingCard";
 import PaymentModal from "../../components/modals/PaymentModal";
 import ToastNotif from "../../components/modals/ToastNotif";
+import EmptyState from "../../components/common/EmptyState";
 import type { BookingCard } from "./BookingTypes";
 import { cancelBooking, getMyBookings } from "../../api/bookProperty";
 import { requestPaymentIntent } from "../../api/payment";
@@ -11,6 +12,22 @@ import { loadStripe } from "@stripe/stripe-js";
 import { useUserData } from "../../context/UserContext";
 import { useWebSocket } from "../../hooks/useWebSocket";
 
+const FILTERS = ["All", "Upcoming", "Completed", "Cancelled"] as const;
+type FilterType = (typeof FILTERS)[number];
+
+const filterToStatuses: Record<FilterType, string[]> = {
+  All: [],
+  Upcoming: [
+    "CONFIRMED",
+    "PENDING",
+    "PENDING_PAYMENT",
+    "PENDING_APPROVAL",
+    "INPROGRESS",
+  ],
+  Completed: ["COMPLETED"],
+  Cancelled: ["CANCELLED", "REJECTED", "EXPIRED", "NOSHOW"],
+};
+
 const MyBookings = () => {
   const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISH_KEY);
 
@@ -18,6 +35,7 @@ const MyBookings = () => {
   const { payload } = useWebSocket("my-bookings");
 
   const [bookings, setBookings] = useState<BookingCard[]>([]);
+  const [activeFilter, setActiveFilter] = useState<FilterType>("All");
   const [showPaymentModal, setShowPaymentModal] = useState<boolean>(false);
   const [notification, setNotification] = useState<{
     show: Boolean;
@@ -30,6 +48,13 @@ const MyBookings = () => {
   const [idempotencyKeyStorage, setIdempotencyKeyStorage] = useState<
     string | null
   >(null);
+
+  const filteredBookings =
+    activeFilter === "All"
+      ? bookings
+      : bookings.filter((b) =>
+          filterToStatuses[activeFilter].includes(b.status.toUpperCase()),
+        );
 
   const handleCancelBooking = async (bookingId: String) => {
     const res = await cancelBooking(bookingId);
@@ -117,8 +142,8 @@ const MyBookings = () => {
   // const totalSpent = bookings.reduce((acc, b) => acc + b.price, 0);
 
   return (
-    <div className="s-screen bg-dark-800 min-h-[520px]">
-      <div className="p-8">
+    <div className="s-screen bg-dark-800 min-h-[520px] page-enter">
+      <div className="p-4 sm:p-6 lg:p-8">
         {/* Toast */}
         {notification.show && (
           <ToastNotif
@@ -128,9 +153,9 @@ const MyBookings = () => {
         )}
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
           <div>
-            <h1 className="font-serif text-[24px] text-[#e8e6e1]">
+            <h1 className="font-serif text-[24px] text-primary text-gradient-gold">
               My Bookings
             </h1>
             <p className="text-[13px] text-muted-faint mt-0.5">
@@ -138,19 +163,19 @@ const MyBookings = () => {
             </p>
           </div>
 
-          <div className="flex gap-2">
-            <button className="s-chip active px-[14px] py-[6px] rounded-[20px] border border-white/[0.12] text-[12px] text-muted bg-transparent hover:bg-gold/15 hover:border-gold hover:text-gold transition-all">
-              All
-            </button>
-            <button className="s-chip px-[14px] py-[6px] rounded-[20px] border border-white/[0.12] text-[12px] text-muted bg-transparent hover:bg-gold/15 hover:border-gold hover:text-gold transition-all">
-              Upcoming
-            </button>
-            <button className="s-chip px-[14px] py-[6px] rounded-[20px] border border-white/[0.12] text-[12px] text-muted bg-transparent hover:bg-gold/15 hover:border-gold hover:text-gold transition-all">
-              Completed
-            </button>
-            <button className="s-chip px-[14px] py-[6px] rounded-[20px] border border-white/[0.12] text-[12px] text-muted bg-transparent hover:bg-gold/15 hover:border-gold hover:text-gold transition-all">
-              Cancelled
-            </button>
+          <div className="flex flex-wrap gap-2">
+            {FILTERS.map((filter) => (
+              <button
+                key={filter}
+                type="button"
+                onClick={() => setActiveFilter(filter)}
+                className={`s-chip px-[14px] py-[6px] rounded-[20px] border border-white/[0.12] text-[12px] text-muted bg-transparent hover:bg-gold/15 hover:border-gold hover:text-gold transition-all btn-press${
+                  activeFilter === filter ? " active" : ""
+                }`}
+              >
+                {filter}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -200,9 +225,9 @@ const MyBookings = () => {
         </div> */}
 
         {/* Cards */}
-        <div className="flex flex-col gap-4">
-          {bookings.length > 0 ? (
-            bookings.map((book) => (
+        <div className="flex flex-col gap-4 stagger-children">
+          {filteredBookings.length > 0 ? (
+            filteredBookings.map((book) => (
               <MyBookingCard
                 key={book.id}
                 booking={book}
@@ -213,9 +238,15 @@ const MyBookings = () => {
               />
             ))
           ) : (
-            <div className="text-center py-20 text-muted-faint">
-              No Bookings
-            </div>
+            <EmptyState
+              title="No Bookings"
+              description={
+                activeFilter === "All"
+                  ? "You haven't made any bookings yet."
+                  : `No ${activeFilter.toLowerCase()} bookings found.`
+              }
+              cta={{ label: "Browse Properties", href: "/" }}
+            />
           )}
         </div>
 

@@ -11,8 +11,6 @@ const MyBookingCard = ({
   const imageBaseUrl = import.meta.env.VITE_CLOUD_PUBLIC_KEY + "/";
   const status = booking.status.toUpperCase();
 
-  console.log(status);
-
   const statusMap: Record<string, { text: string; classes: string }> = {
     CANCELLED: {
       text: "CANCELLED",
@@ -66,18 +64,20 @@ const MyBookingCard = ({
 
   return (
     <div
-      className={`bg-dark-700 border border-white/[0.07] rounded-2xl overflow-hidden flex ${
-        status === "cancelled" ? "opacity-60" : ""
+      className={`bg-dark-700 border border-white/[0.07] rounded-2xl overflow-hidden flex flex-col sm:flex-row card-interactive ${
+        status === "CANCELLED" ? "opacity-60" : ""
       }`}
     >
       {/* Image */}
-      <img
-        src={imageBaseUrl + booking.imageUrl}
-        alt={booking.title}
-        className={`w-[200px] h-auto object-cover flex-shrink-0 ${
-          status === "cancelled" ? "grayscale" : ""
-        }`}
-      />
+      <div className="overflow-hidden flex-shrink-0 w-full h-48 sm:w-[200px] sm:h-auto sm:self-stretch">
+        <img
+          src={imageBaseUrl + booking.imageUrl}
+          alt={booking.title}
+          className={`w-full h-full object-cover zoom-img ${
+            status === "CANCELLED" ? "grayscale" : ""
+          }`}
+        />
+      </div>
 
       {/* Content */}
       <div className="flex-1 p-5 flex flex-col justify-between min-w-0">
@@ -85,13 +85,13 @@ const MyBookingCard = ({
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <span className="font-medium text-[15px] text-[#e8e6e1]">
+              <span className="font-medium text-[15px] text-primary">
                 {booking.title}
               </span>
 
               {/* Status Badge */}
               <span
-                className={`text-[10px] font-semibold px-2.5 py-[4px] rounded-full tracking-wide border ${
+                className={`text-[10px] font-semibold px-2.5 py-[4px] rounded-full tracking-wide border animate-scaleIn ${
                   statusMap[status]?.classes ||
                   "bg-white/10 text-white/80 border-white/20"
                 }`}
@@ -120,7 +120,7 @@ const MyBookingCard = ({
             <div className="text-[10px] text-muted-faint uppercase">
               Check-in
             </div>
-            <div className="text-[13px] font-medium text-[#e8e6e1] mt-0.5">
+            <div className="text-[13px] font-medium text-primary mt-0.5">
               {formatDate(booking.start)}
             </div>
           </div>
@@ -137,15 +137,15 @@ const MyBookingCard = ({
             <div className="text-[10px] text-muted-faint uppercase">
               Check-out
             </div>
-            <div className="text-[13px] font-medium text-[#e8e6e1] mt-0.5">
+            <div className="text-[13px] font-medium text-primary mt-0.5">
               {formatDate(booking.end)}
             </div>
           </div>
         </div>
 
         {/* Bottom */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div className="flex items-center gap-3 min-w-0">
             {booking.totalGuests && (
               <div className="text-[12px] text-muted-faint">
                 👤 {booking.totalGuests} guests
@@ -160,10 +160,10 @@ const MyBookingCard = ({
           </div>
 
           {/* Actions */}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {/* View Details */}
             <Link
-              className="px-4 py-2 rounded-lg text-[12px] bg-gold/10 border border-gold/20 text-gold hover:bg-gold/20 transition"
+              className="px-4 py-2 rounded-lg text-[12px] bg-gold/10 border border-gold/20 text-gold hover:bg-gold/20 transition btn-press"
               to={`/property/${booking.propertyId}`}
             >
               View Details
@@ -181,7 +181,7 @@ const MyBookingCard = ({
                 {status === "PENDING_PAYMENT" && (
                   <button
                     onClick={action.paymentModal}
-                    className="px-4 py-2 rounded-lg text-[12px] bg-gold/10 border border-gold/20 text-gold hover:bg-gold/20 transition"
+                    className="px-4 py-2 rounded-lg text-[12px] bg-gold/10 border border-gold/20 text-gold hover:bg-gold/20 transition btn-press"
                   >
                     Pay Now
                   </button>
@@ -189,10 +189,10 @@ const MyBookingCard = ({
                 {/* Cancel Button */}
                 <button
                   onClick={action.cancel}
-                  disabled={status === "cancelled"}
-                  className={`px-4 py-2 rounded-lg text-[12px] border
+                  disabled={status === "CANCELLED"}
+                  className={`px-4 py-2 rounded-lg text-[12px] border btn-press
                 ${
-                  status === "cancelled"
+                  status === "CANCELLED"
                     ? "border-white/10 text-muted cursor-not-allowed"
                     : "border-white/10 text-muted hover:bg-red-900/10 hover:border-red-500/30 hover:text-red-400"
                 }`}

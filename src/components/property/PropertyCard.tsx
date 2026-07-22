@@ -29,19 +29,21 @@ const PropertyCard = ({
   };
 
   return (
-    <div className="relative bg-dark-700 rounded-[14px] border border-white/[0.07] overflow-hidden cursor-pointer hover:-translate-y-1 hover:border-gold/30 transition-all duration-200 animate-cardFadeIn">
+    <div className="relative bg-dark-700 rounded-[14px] border border-white/[0.07] overflow-hidden cursor-pointer card-interactive">
       {/* Favorite Button (Home Mode) */}
       {settings.mode === "home" && (
-        <div
+        <button
+          type="button"
+          aria-label={property.isFavorite ? "Remove from favorites" : "Add to favorites"}
           onClick={handleFavoriteClick}
-          className={`absolute top-2 right-2 w-8 h-8 bg-dark-900/60 rounded-full flex items-center justify-center text-xl cursor-pointer text-gold backdrop-blur-sm transition-transform duration-300 hover:scale-110 z-1`}
+          className={`absolute top-2 right-2 w-11 h-11 bg-dark-900/60 rounded-full flex items-center justify-center text-xl cursor-pointer text-gold backdrop-blur-sm transition-transform duration-300 hover-scale z-1 btn-press ${property.isFavorite ? "animate-popIn" : ""}`}
         >
           {property.isFavorite ? (
             <FaHeart color="#ff0000" size={16} />
           ) : (
             <FaRegHeart size={16} />
           )}
-        </div>
+        </button>
       )}
 
       {/* Property Details */}

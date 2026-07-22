@@ -39,13 +39,13 @@ const PropertyCardDetails = ({
         }}
         className="block mb-4"
       >
-        <div className="relative w-full h-[180px] overflow-hidden">
+        <div className="relative w-full aspect-[4/3] overflow-hidden">
           <img
             src={publicKey + "/" + property.imageUrl}
             alt={property.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover zoom-img"
             loading="lazy"
-            decoding="sync"
+            decoding="async"
           />
 
           {/* Category Badge */}
@@ -56,7 +56,7 @@ const PropertyCardDetails = ({
 
         {/* Property Details */}
         <div className="mx-4 my-2">
-          <h3 className="text-xl text-white">{property.title}</h3>
+          <h3 className="text-xl text-primary">{property.title}</h3>
           <h5 className="text-sm font-medium text-muted-faint mb-1 flex items-center space-x-2">
             📍{property.address}, {property.city}
           </h5>
@@ -70,9 +70,10 @@ const PropertyCardDetails = ({
 
       {/* Manage Property Actions */}
       {settings.mode === "manage" && (
-        <div className="flex gap-2 mt-4">
+        <div className="flex gap-2 px-4 pb-4">
           <button
-            className="edit-btn p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+            aria-label="Edit property"
+            className="edit-btn w-9 h-9 flex items-center justify-center bg-white/10 border border-white/20 text-white rounded-md hover:border-gold/40 hover:text-gold transition-colors hover-scale btn-press"
             onClick={() =>
               actions.onEdit && property.id && actions.onEdit(property.id)
             }
@@ -80,7 +81,8 @@ const PropertyCardDetails = ({
             <MdEdit />
           </button>
           <button
-            className="delete-btn p-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+            aria-label="Delete property"
+            className="delete-btn w-9 h-9 flex items-center justify-center bg-white/5 border border-white/20 text-muted rounded-md hover:border-red-400/40 hover:text-red-400 transition-colors hover-scale btn-press"
             onClick={() =>
               actions.onDelete && property.id && actions.onDelete(property.id)
             }

@@ -1,12 +1,32 @@
 import PropertyCard from "../../components/property/PropertyCard";
 import { getProperties } from "../../api/property";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { PropertyTypesView } from "../../pages/property/Propertytypes";
 import { addFavorite, removeFavorite } from "../../api/favorite";
 import { useUserData } from "../../context/UserContext";
 import { useNavigate } from "react-router-dom";
 import SkeletonLoading from "../../components/common/SkeletonLoading";
 import DatePicker from "react-datepicker";
+import { FiMapPin, FiCalendar, FiUsers, FiTag, FiSearch, FiX } from "react-icons/fi";
+
+// Popular destinations shown before the user types; merged with the real
+// cities/addresses of loaded listings so suggestions always reflect inventory.
+const POPULAR_DESTINATIONS = [
+  "Manila",
+  "Makati",
+  "Quezon City",
+  "Tagaytay",
+  "Baguio",
+  "Cebu City",
+  "Boracay",
+  "Palawan",
+  "El Nido",
+  "Siargao",
+  "Bohol",
+  "Davao City",
+  "La Union",
+  "Batangas",
+];
 
 const Home = () => {
   const navigate = useNavigate();
@@ -26,9 +46,84 @@ const Home = () => {
   const [minPrice, setMinPrice] = useState<number | null>(null);
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
   const [activeField, setActiveField] = useState<string | null>(null);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [highlightedCity, setHighlightedCity] = useState<number>(-1);
+  // Bumped on every explicit search so the fetch effect re-runs even when the
+  // page is already 0 (state resets are read on the next render, avoiding a
+  // stale-closure fetch).
+  const [searchNonce, setSearchNonce] = useState<number>(0);
 
   const toggleField = (field: string | null) => {
     setActiveField((prev) => (prev === field ? null : field));
+  };
+
+  const hasActiveFilters =
+    !!address ||
+    !!checkOut ||
+    minGuests > 1 ||
+    minPrice !== null ||
+    maxPrice !== null;
+
+  const runSearch = () => {
+    setActiveField(null);
+    setIsSearching(true);
+    setCurrentPage(0);
+    setSearchNonce((n) => n + 1);
+  };
+
+  const clearFilters = () => {
+    setAddress("");
+    setCheckIn(new Date());
+    setCheckOut(undefined);
+    setMinGuests(1);
+    setMinPrice(null);
+    setMaxPrice(null);
+    setActiveField(null);
+    setIsSearching(true);
+    setCurrentPage(0);
+    setSearchNonce((n) => n + 1);
+  };
+
+  // Destination suggestions: popular destinations + every distinct city and
+  // address present in the loaded listings.
+  const citySuggestions = useMemo(() => {
+    const fromListings = properties
+      .flatMap((p) => [p.city, p.address])
+      .filter((c): c is string => !!c && c.trim().length > 0);
+    return Array.from(new Set([...POPULAR_DESTINATIONS, ...fromListings]));
+  }, [properties]);
+
+  const filteredCities = useMemo(() => {
+    const q = address.trim().toLowerCase();
+    const list = q
+      ? citySuggestions.filter((c) => c.toLowerCase().includes(q))
+      : citySuggestions;
+    return list.slice(0, 6);
+  }, [address, citySuggestions]);
+
+  const selectCity = (city: string) => {
+    setAddress(city);
+    setHighlightedCity(-1);
+    runSearch();
+  };
+
+  const handleCityKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlightedCity((i) => Math.min(i + 1, filteredCities.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightedCity((i) => Math.max(i - 1, 0));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (highlightedCity >= 0 && filteredCities[highlightedCity]) {
+        selectCity(filteredCities[highlightedCity]);
+      } else {
+        runSearch();
+      }
+    } else if (e.key === "Escape") {
+      setActiveField(null);
+    }
   };
 
   const handleFavorite = async (propertyId: string) => {
@@ -87,12 +182,13 @@ const Home = () => {
       console.error("Error fetching properties:", e);
     } finally {
       setLoading(false);
+      setIsSearching(false);
     }
   };
 
   useEffect(() => {
     fetchProperties();
-  }, [currentPage]);
+  }, [currentPage, searchNonce]);
 
   if (loading) {
     return <SkeletonLoading />;
@@ -100,262 +196,319 @@ const Home = () => {
 
   return (
     <div
-      className="h-[90vh] active bg-dark-800 overflow-y-auto"
+      className="min-h-[90vh] active bg-dark-800 overflow-y-auto page-enter"
       onClick={() => setActiveField(null)}
     >
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         {/* Search Bar */}
-        <div className="relative flex items-stretch bg-dark-700 border border-white/[0.08] rounded-[56px] overflow-visible mb-8">
-          {/* City */}
-          <div
-            className={`relative flex-1 px-5 py-[10px] border-r border-white/[0.07] cursor-pointer transition-colors rounded-l-[56px] ${activeField === "location" ? "bg-white/[0.06]" : "hover:bg-white/[0.04]"}`}
-            onClick={(e) => {
-              toggleField("location");
-              e.stopPropagation();
-            }}
-          >
-            <div className="text-[10px] text-muted-faint uppercase tracking-widest mb-1">
-              City
-            </div>
+        <div className="mb-8">
+          <div className="relative flex flex-col sm:flex-row sm:items-stretch bg-dark-700 border border-white/[0.08] rounded-2xl sm:rounded-[56px] sm:p-1.5 overflow-visible transition-shadow hover:shadow-[0_10px_40px_-12px_rgba(0,0,0,0.6)]">
+            {/* City */}
             <div
-              className={`text-[13px] ${address ? "text-[#e8e6e1]" : "text-[#4a4846]"}`}
+              className={`group relative w-full sm:flex-1 flex items-center gap-3 px-5 py-3 border-b sm:border-b-0 sm:border-r border-white/[0.07] cursor-pointer transition-colors sm:rounded-l-[56px] ${activeField === "location" ? "bg-white/[0.06]" : "hover:bg-white/[0.04]"}`}
+              onClick={(e) => {
+                toggleField("location");
+                e.stopPropagation();
+              }}
             >
-              {address || "Where are you going?"}
-            </div>
-            {activeField === "location" && (
-              <div
-                className="absolute top-[calc(100%+10px)] left-0 min-w-[240px] bg-dark-600 border border-white/10 rounded-[20px] z-20 overflow-hidden animate-fadeIn shadow-xl"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="p-[18px_20px]">
-                  <div className="text-[11px] uppercase tracking-widest text-muted-faint mb-[10px]">
-                    Destination
-                  </div>
-                  <input
-                    autoFocus
-                    type="text"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    placeholder="City, neighborhood…"
-                    className="w-full bg-dark-800 border border-white/10 rounded-xl px-[14px] py-[10px] text-[14px] text-[#e8e6e1] outline-none focus:border-gold/50 transition-colors"
-                    onClick={(e) => e.stopPropagation()}
-                  />
+              <FiMapPin
+                size={17}
+                className="shrink-0 text-gold/70 group-hover:text-gold transition-colors"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="text-[10px] text-muted-faint uppercase tracking-widest mb-0.5">
+                  City
+                </div>
+                <div
+                  className={`text-[13px] truncate ${address ? "text-primary" : "text-muted-ghost"}`}
+                >
+                  {address || "Where are you going?"}
                 </div>
               </div>
-            )}
-          </div>
-
-          {/* Check-in */}
-          <div
-            className={`relative flex-1 px-5 py-[10px] border-r border-white/[0.07] cursor-pointer transition-colors z-10`}
-          >
-            <div className="text-[10px] text-muted-faint uppercase tracking-widest mb-1">
-              Check-in
-            </div>
-            <DatePicker
-              onChange={(date) => {
-                if (!date) return;
-                setCheckIn(date);
-              }}
-              placeholderText={
-                checkIn
-                  ? checkIn.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })
-                  : "Select Date"
-              }
-              selectsStart
-              minDate={new Date()}
-              maxDate={checkOut}
-              className="text-[13px] text-[#e8e6e1] outline-none cursor-pointer"
-              wrapperClassName="relative z-20"
-            />
-          </div>
-
-          {/* Checkout */}
-          <div
-            className={`relative flex-1 px-5 py-[10px] border-r border-white/[0.07] cursor-pointer transition-colors z-10`}
-          >
-            <div className="text-[10px] text-muted-faint uppercase tracking-widest mb-1">
-              Check-out
-            </div>
-            <DatePicker
-              onChange={(date) => {
-                if (!date) return;
-                setCheckOut(date);
-              }}
-              placeholderText={
-                checkOut
-                  ? checkOut.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })
-                  : "Select Date"
-              }
-              selectsStart
-              minDate={checkIn ? checkIn : new Date()}
-              className="text-[13px] text-[#e8e6e1] outline-none cursor-pointer z-100"
-            />
-          </div>
-
-          {/* Guests */}
-          <div
-            className={`relative flex-1 px-5 py-[10px] border-r border-white/[0.07] cursor-pointer transition-colors z-100 ${activeField === "guests" ? "bg-white/[0.06]" : "hover:bg-white/[0.04]"}`}
-            onClick={() => toggleField("guests")}
-          >
-            <div className="text-[10px] text-muted-faint uppercase tracking-widest mb-1">
-              Guests
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="text-[13px] text-[#e8e6e1]">Guests</div>
-              <div className="flex items-center gap-0">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setMinGuests((p) => Math.max(1, p - 1));
-                  }}
-                  disabled={minGuests <= 1}
-                  className="w-[30px] h-[30px] rounded-full border border-white/15 bg-transparent text-[#e8e6e1] flex items-center justify-center hover:border-gold/60 hover:text-gold disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              {activeField === "location" && (
+                <div
+                  className="absolute top-[calc(100%+10px)] left-0 w-[280px] max-w-[calc(100vw-2rem)] bg-dark-600 border border-white/10 rounded-[20px] z-30 overflow-hidden animate-scaleIn shadow-xl"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  −
-                </button>
-                <span className="w-8 text-center text-[14px] text-[#e8e6e1]">
-                  {minGuests}
-                </span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setMinGuests((p) => p + 1);
+                  <div className="p-4">
+                    <input
+                      autoFocus
+                      type="text"
+                      role="combobox"
+                      aria-expanded={true}
+                      aria-controls="city-suggestions"
+                      aria-autocomplete="list"
+                      aria-activedescendant={
+                        highlightedCity >= 0
+                          ? `city-opt-${highlightedCity}`
+                          : undefined
+                      }
+                      value={address}
+                      onChange={(e) => {
+                        setAddress(e.target.value);
+                        setHighlightedCity(-1);
+                      }}
+                      onKeyDown={handleCityKeyDown}
+                      placeholder="City, neighborhood…"
+                      className="s-input w-full bg-dark-800 border border-white/10 rounded-xl px-[14px] py-[10px] text-[14px] text-primary outline-none focus:border-gold/50 transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <div className="text-[10px] uppercase tracking-widest text-muted-faint mt-3 mb-1.5 px-1">
+                      {address.trim() ? "Suggestions" : "Popular destinations"}
+                    </div>
+                    {filteredCities.length > 0 ? (
+                      <ul
+                        id="city-suggestions"
+                        role="listbox"
+                        className="max-h-[240px] overflow-y-auto no-scrollbar"
+                      >
+                        {filteredCities.map((city, i) => (
+                          <li
+                            id={`city-opt-${i}`}
+                            key={city}
+                            role="option"
+                            aria-selected={i === highlightedCity}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              selectCity(city);
+                            }}
+                            onMouseEnter={() => setHighlightedCity(i)}
+                            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg cursor-pointer text-[13px] transition-colors ${
+                              i === highlightedCity
+                                ? "bg-gold/15 text-gold"
+                                : "text-primary hover:bg-white/[0.05]"
+                            }`}
+                          >
+                            <FiMapPin
+                              size={14}
+                              className="shrink-0 text-muted-faint"
+                            />
+                            <span className="truncate">{city}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-[12px] text-muted-faint px-1 py-2">
+                        No matches. Press{" "}
+                        <span className="text-primary">Enter</span> to search “
+                        {address}”.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Check-in */}
+            <div className="relative w-full sm:flex-1 flex items-center gap-3 px-5 py-3 border-b sm:border-b-0 sm:border-r border-white/[0.07] transition-colors hover:bg-white/[0.04] z-10">
+              <FiCalendar size={17} className="shrink-0 text-gold/70" />
+              <div className="min-w-0 flex-1">
+                <div className="text-[10px] text-muted-faint uppercase tracking-widest mb-0.5">
+                  Check-in
+                </div>
+                <DatePicker
+                  selected={checkIn}
+                  onChange={(date) => {
+                    if (!date) return;
+                    setCheckIn(date);
                   }}
-                  className="w-[30px] h-[30px] rounded-full border border-white/15 bg-transparent text-[#e8e6e1] flex items-center justify-center hover:border-gold/60 hover:text-gold transition-all"
-                >
-                  +
-                </button>
+                  placeholderText="Select date"
+                  dateFormat="MMM d, yyyy"
+                  selectsStart
+                  startDate={checkIn}
+                  endDate={checkOut}
+                  minDate={new Date()}
+                  maxDate={checkOut}
+                  className="w-full bg-transparent text-[13px] text-primary outline-none cursor-pointer"
+                  wrapperClassName="relative z-30 w-full"
+                />
               </div>
             </div>
-          </div>
 
-          {/* Price */}
-          <div
-            className={`relative flex-1 px-5 py-[10px] cursor-pointer transition-colors z-10 ${activeField === "price" ? "bg-white/[0.06]" : "hover:bg-white/[0.04]"}`}
-            onClick={(e) => {
-              toggleField("price");
-              e.stopPropagation();
-            }}
-          >
-            <div className="text-[10px] text-muted-faint uppercase tracking-widest mb-1">
-              Price
+            {/* Checkout */}
+            <div className="relative w-full sm:flex-1 flex items-center gap-3 px-5 py-3 border-b sm:border-b-0 sm:border-r border-white/[0.07] transition-colors hover:bg-white/[0.04] z-10">
+              <FiCalendar size={17} className="shrink-0 text-gold/70" />
+              <div className="min-w-0 flex-1">
+                <div className="text-[10px] text-muted-faint uppercase tracking-widest mb-0.5">
+                  Check-out
+                </div>
+                <DatePicker
+                  selected={checkOut}
+                  onChange={(date) => {
+                    if (!date) return;
+                    setCheckOut(date);
+                  }}
+                  placeholderText="Add date"
+                  dateFormat="MMM d, yyyy"
+                  selectsEnd
+                  startDate={checkIn}
+                  endDate={checkOut}
+                  minDate={checkIn ? checkIn : new Date()}
+                  className="w-full bg-transparent text-[13px] text-primary outline-none cursor-pointer"
+                  wrapperClassName="relative z-30 w-full"
+                />
+              </div>
             </div>
-            <div
-              className={`text-[13px] ${minPrice || maxPrice ? "text-[#e8e6e1]" : "text-[#4a4846]"}`}
-            >
-              {minPrice || maxPrice
-                ? minPrice && maxPrice
-                  ? `₱${minPrice} - ₱${maxPrice}`
-                  : minPrice
-                    ? `₱${minPrice}+`
-                    : `Up to ₱${maxPrice}`
-                : "Any price"}
-            </div>
-            {activeField === "price" && (
-              <div
-                className="absolute top-[calc(100%+10px)] bg-dark-600 w-70 border border-white/10 rounded-[20px] z-20 overflow-hidden shadow-xl"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="p-[18px_20px] grid gap-y-1">
-                  <div className="text-[11px] uppercase tracking-widest text-muted-faint">
-                    Price range (₱/night)
-                  </div>
-                  <div className="flex gap-[10px]">
-                    <div className="relative flex-1">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-muted-faint">
-                        ₱
-                      </span>
-                      <input
-                        type="number"
-                        placeholder="Min"
-                        value={minPrice ?? ""}
-                        onChange={(e) =>
-                          setMinPrice(
-                            e.target.value ? Number(e.target.value) : null,
-                          )
-                        }
-                        className="w-full bg-dark-800 border border-white/10 rounded-xl pl-6 pr-3 py-[9px] text-[13px] text-[#e8e6e1] outline-none focus:border-gold/50 transition-colors"
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex gap-[10px]">
-                    <div className="relative flex-1">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-muted-faint">
-                        ₱
-                      </span>
-                      <input
-                        type="number"
-                        placeholder="Max"
-                        value={maxPrice ?? ""}
-                        onChange={(e) =>
-                          setMaxPrice(
-                            e.target.value ? Number(e.target.value) : null,
-                          )
-                        }
-                        className="w-full bg-dark-800 border border-white/10 rounded-xl pl-6 pr-3 py-[9px] text-[13px] text-[#e8e6e1] outline-none focus:border-gold/50 transition-colors"
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    </div>
+
+            {/* Guests */}
+            <div className="relative w-full sm:flex-1 flex items-center gap-3 px-5 py-3 border-b sm:border-b-0 sm:border-r border-white/[0.07]">
+              <FiUsers size={17} className="shrink-0 text-gold/70" />
+              <div className="min-w-0 flex-1">
+                <div className="text-[10px] text-muted-faint uppercase tracking-widest mb-0.5">
+                  Guests
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[13px] text-primary">
+                    {minGuests} {minGuests === 1 ? "guest" : "guests"}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      aria-label="Decrease guests"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMinGuests((p) => Math.max(1, p - 1));
+                      }}
+                      disabled={minGuests <= 1}
+                      className="w-7 h-7 rounded-full border border-white/15 bg-transparent text-primary flex items-center justify-center hover:border-gold/60 hover:text-gold disabled:opacity-30 disabled:cursor-not-allowed transition-all btn-press"
+                    >
+                      −
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Increase guests"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMinGuests((p) => p + 1);
+                      }}
+                      className="w-7 h-7 rounded-full border border-white/15 bg-transparent text-primary flex items-center justify-center hover:border-gold/60 hover:text-gold transition-all btn-press"
+                    >
+                      +
+                    </button>
                   </div>
                 </div>
               </div>
-            )}
+            </div>
+
+            {/* Price */}
+            <div
+              className={`group relative w-full sm:flex-1 flex items-center gap-3 px-5 py-3 cursor-pointer transition-colors z-10 ${activeField === "price" ? "bg-white/[0.06]" : "hover:bg-white/[0.04]"}`}
+              onClick={(e) => {
+                toggleField("price");
+                e.stopPropagation();
+              }}
+            >
+              <FiTag
+                size={17}
+                className="shrink-0 text-gold/70 group-hover:text-gold transition-colors"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="text-[10px] text-muted-faint uppercase tracking-widest mb-0.5">
+                  Price
+                </div>
+                <div
+                  className={`text-[13px] truncate ${minPrice || maxPrice ? "text-primary" : "text-muted-ghost"}`}
+                >
+                  {minPrice || maxPrice
+                    ? minPrice && maxPrice
+                      ? `₱${minPrice} - ₱${maxPrice}`
+                      : minPrice
+                        ? `₱${minPrice}+`
+                        : `Up to ₱${maxPrice}`
+                    : "Any price"}
+                </div>
+              </div>
+              {activeField === "price" && (
+                <div
+                  className="absolute top-[calc(100%+10px)] right-0 sm:right-auto bg-dark-600 w-72 border border-white/10 rounded-[20px] z-30 overflow-hidden animate-scaleIn shadow-xl"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="p-[18px_20px] grid gap-3">
+                    <div className="text-[11px] uppercase tracking-widest text-muted-faint">
+                      Price range (₱/night)
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-muted-faint">
+                          ₱
+                        </span>
+                        <input
+                          type="number"
+                          min={0}
+                          placeholder="Min"
+                          value={minPrice ?? ""}
+                          onChange={(e) =>
+                            setMinPrice(
+                              e.target.value ? Number(e.target.value) : null,
+                            )
+                          }
+                          onKeyDown={(e) => e.key === "Enter" && runSearch()}
+                          className="s-input w-full bg-dark-800 border border-white/10 rounded-xl pl-6 pr-3 py-[9px] text-[13px] text-primary outline-none focus:border-gold/50 transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                      <span className="text-muted-faint text-[13px]">–</span>
+                      <div className="relative flex-1">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-muted-faint">
+                          ₱
+                        </span>
+                        <input
+                          type="number"
+                          min={0}
+                          placeholder="Max"
+                          value={maxPrice ?? ""}
+                          onChange={(e) =>
+                            setMaxPrice(
+                              e.target.value ? Number(e.target.value) : null,
+                            )
+                          }
+                          onKeyDown={(e) => e.key === "Enter" && runSearch()}
+                          className="s-input w-full bg-dark-800 border border-white/10 rounded-xl pl-6 pr-3 py-[9px] text-[13px] text-primary outline-none focus:border-gold/50 transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Search button */}
+            <button
+              type="button"
+              aria-label="Search properties"
+              onClick={runSearch}
+              disabled={isSearching}
+              className="bg-gold w-full sm:w-auto h-11 sm:min-w-11 rounded-xl sm:rounded-full mx-3 my-3 sm:mx-1 sm:my-auto px-5 sm:px-0 flex items-center justify-center gap-2 flex-shrink-0 border-none hover:bg-gold-light transition-all cursor-pointer relative overflow-hidden shine btn-press disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              {isSearching ? (
+                <span className="w-4 h-4 border-2 border-dark-900/30 border-t-dark-900 rounded-full animate-spin" />
+              ) : (
+                <FiSearch size={18} className="text-dark-900" strokeWidth={2.4} />
+              )}
+              <span className="sm:hidden text-dark-900 text-[14px] font-semibold">
+                {isSearching ? "Searching…" : "Search"}
+              </span>
+            </button>
           </div>
 
-          <button
-            className="bg-gold w-11 h-11 rounded-full mx-[8px] my-auto flex items-center justify-center flex-shrink-0 border-none hover:bg-gold-light transition-all hover:scale-105 cursor-pointer"
-            onClick={fetchProperties}
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#111"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="11" cy="11" r="7" />
-              <line x1="16.5" y1="16.5" x2="22" y2="22" />
-            </svg>
-          </button>
+          {/* Active-filter reset */}
+          {hasActiveFilters && (
+            <div className="flex justify-end mt-3 animate-fadeIn">
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="flex items-center gap-1.5 text-[12px] text-muted-faint hover:text-gold transition-colors btn-press"
+              >
+                <FiX size={13} />
+                Clear filters
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Filter Chips */}
-        {/* <div className="flex gap-2 mb-6 flex-wrap">
-          <button className="s-chip active px-[14px] py-[6px] rounded-[20px] border border-white/[0.12] text-[12px] text-muted cursor-pointer bg-transparent hover:bg-gold/15 hover:border-gold hover:text-gold transition-all">
-            All
-          </button>
-          <button className="s-chip px-[14px] py-[6px] rounded-[20px] border border-white/[0.12] text-[12px] text-muted cursor-pointer bg-transparent hover:bg-gold/15 hover:border-gold hover:text-gold transition-all">
-            Apartment
-          </button>
-          <button className="s-chip px-[14px] py-[6px] rounded-[20px] border border-white/[0.12] text-[12px] text-muted cursor-pointer bg-transparent hover:bg-gold/15 hover:border-gold hover:text-gold transition-all">
-            Condo
-          </button>
-          <button className="s-chip px-[14px] py-[6px] rounded-[20px] border border-white/[0.12] text-[12px] text-muted cursor-pointer bg-transparent hover:bg-gold/15 hover:border-gold hover:text-gold transition-all">
-            House
-          </button>
-          <button className="s-chip px-[14px] py-[6px] rounded-[20px] border border-white/[0.12] text-[12px] text-muted cursor-pointer bg-transparent hover:bg-gold/15 hover:border-gold hover:text-gold transition-all">
-            Villa
-          </button>
-          <button className="s-chip ml-auto flex items-center gap-1 px-[14px] py-[6px] rounded-[20px] border border-white/[0.12] text-[12px] text-muted cursor-pointer bg-transparent hover:bg-gold/15 hover:border-gold hover:text-gold transition-all">
-            ⚙ Filters
-          </button>
-        </div> */}
-
         {/* Listings Grid */}
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-4">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(min(260px,100%),1fr))] gap-4 stagger-children">
           {properties.length > 0 ? (
             properties?.map((property) => (
               <PropertyCard
@@ -367,9 +520,9 @@ const Home = () => {
               />
             ))
           ) : (
-            <div className="col-span-full text-center py-8">
-              <h1 className="text-xl text-[#e8e6e1]">No Properties Found</h1>
-              <p className="text-gray-400 mt-2">
+            <div className="col-span-full text-center py-8 animate-fadeIn">
+              <h1 className="text-xl text-primary">No Properties Found</h1>
+              <p className="text-muted-faint mt-2">
                 It seems like there are no properties available at the moment.
                 Check back later!
               </p>
@@ -380,9 +533,10 @@ const Home = () => {
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 mt-8">
             <button
+              aria-label="Previous page"
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
               disabled={currentPage === 0}
-              className="w-9 h-9 rounded-full border border-white/[0.12] text-muted text-[13px] flex items-center justify-center bg-transparent cursor-pointer hover:bg-gold/15 hover:border-gold hover:text-gold transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:border-white/[0.12] disabled:hover:text-muted"
+              className="w-9 h-9 rounded-full border border-white/[0.12] text-muted text-[13px] flex items-center justify-center bg-transparent cursor-pointer hover:bg-gold/15 hover:border-gold hover:text-gold transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:border-white/[0.12] disabled:hover:text-muted btn-press"
             >
               ←
             </button>
@@ -407,7 +561,8 @@ const Home = () => {
                 <button
                   key={i}
                   onClick={() => setCurrentPage(i)}
-                  className={`w-9 h-9 rounded-full text-[13px] flex items-center justify-center transition-all cursor-pointer border ${
+                  aria-current={isActive ? "page" : undefined}
+                  className={`w-9 h-9 rounded-full text-[13px] flex items-center justify-center transition-all cursor-pointer border btn-press ${
                     isActive
                       ? "bg-gold border-gold text-dark-900 font-semibold"
                       : "border-white/[0.12] text-muted bg-transparent hover:bg-gold/15 hover:border-gold hover:text-gold"
@@ -419,11 +574,12 @@ const Home = () => {
             })}
 
             <button
+              aria-label="Next page"
               onClick={() =>
                 setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))
               }
               disabled={currentPage === totalPages - 1}
-              className="w-9 h-9 rounded-full border border-white/[0.12] text-muted text-[13px] flex items-center justify-center bg-transparent cursor-pointer hover:bg-gold/15 hover:border-gold hover:text-gold transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:border-white/[0.12] disabled:hover:text-muted"
+              className="w-9 h-9 rounded-full border border-white/[0.12] text-muted text-[13px] flex items-center justify-center bg-transparent cursor-pointer hover:bg-gold/15 hover:border-gold hover:text-gold transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:border-white/[0.12] disabled:hover:text-muted btn-press"
             >
               →
             </button>

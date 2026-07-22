@@ -27,9 +27,9 @@ const ToastNotif = ({ message, onClose }: Props) => {
 
   return (
     <div
-      className={`toastNotif-container ${isClosing ? "toastNotif-exit" : ""}`}
+      className={`toastNotif-container animate-fadeInDown ${isClosing ? "toastNotif-exit" : ""}`}
     >
-      <h4>{message}</h4>
+      <h4 className="text-[13px] font-medium text-[#e8e6e1] leading-snug">{message}</h4>
     </div>
   );
 };

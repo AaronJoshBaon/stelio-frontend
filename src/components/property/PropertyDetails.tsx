@@ -6,34 +6,34 @@ import type { PropertyTypesView } from "../../pages/property/Propertytypes";
 
 const PropertyDetails = ({ property }: { property: PropertyTypesView }) => {
   return (
-    <div className="property-details">
-      <h2 className="property-title">{property.title}</h2>
-      <p className="property-address">{property.address}</p>
+    <div className="space-y-4 animate-fadeInUp">
+      <h2 className="font-serif text-2xl sm:text-3xl text-white">{property.title}</h2>
+      <p className="text-sm text-muted-faint">{property.address}</p>
 
-      <p className="property-description">{property.description}</p>
+      <p className="text-sm text-muted leading-relaxed">{property.description}</p>
 
-      <ul className="view-amenities">
-        <li>
-          <GoPeople size={28} />
+      <ul className="flex flex-wrap gap-4 mt-2 list-none p-0 stagger-children">
+        <li className="flex items-center gap-2 text-sm text-primary">
+          <GoPeople size={22} />
           <span>
             {property.maxGuest} {property.maxGuest > 1 ? "guests" : "guest"}
           </span>
         </li>
-        <li>
-          <MdOutlineMeetingRoom size={28} />
+        <li className="flex items-center gap-2 text-sm text-primary">
+          <MdOutlineMeetingRoom size={22} />
           <span>
             {property.totalBedroom}{" "}
             {property.totalBedroom > 1 ? "bedrooms" : "bedroom"}
           </span>
         </li>
-        <li>
-          <LuBedSingle size={28} />
+        <li className="flex items-center gap-2 text-sm text-primary">
+          <LuBedSingle size={22} />
           <span>
             {property.totalBed} {property.totalBed > 1 ? "beds" : "bed"}
           </span>
         </li>
-        <li>
-          <MdOutlineBathroom size={28} />
+        <li className="flex items-center gap-2 text-sm text-primary">
+          <MdOutlineBathroom size={22} />
           <span>
             {property.totalBath} {property.totalBath > 1 ? "baths" : "bath"}
           </span>

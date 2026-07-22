@@ -1,4 +1,4 @@
-.booking-container{
+.booking-container {
     margin: 25px 0;
     display: flex;
     flex-direction: column;
@@ -9,4 +9,11 @@
 .booking-calendar-container {
     display: flex;
     column-gap: 5%;
+    transition: opacity 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .booking-calendar-container {
+        flex-direction: column;
+    }
 }

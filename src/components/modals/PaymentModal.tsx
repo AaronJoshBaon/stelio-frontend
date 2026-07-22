@@ -1,6 +1,7 @@
 import { memo, useState } from "react";
 
 import type { BookingCard } from "../../pages/bookings/BookingTypes";
+import { nightsBetween } from "../../utils/date";
 import {
   useStripe,
   useElements,
@@ -28,6 +29,7 @@ const PaymentModal = ({ booking, clientSecret, action }: PaymentModalProps) => {
   const [brand, setBrand] = useState<string | null>(null);
   const [isPaymentInprogress, setIsPaymentInprogress] =
     useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const startDate = new Date(booking.start);
   const endDate = new Date(booking.end);
@@ -56,7 +58,7 @@ const PaymentModal = ({ booking, clientSecret, action }: PaymentModalProps) => {
       currency: "PHP",
     }).format(amount);
 
-  const totalNights = endDate.getDate() - startDate.getDate();
+  const totalNights = nightsBetween(startDate, endDate);
   const totalPrice = Math.max(0, booking.price * totalNights);
 
   const handleElementChange = (event: any) => {
@@ -88,6 +90,8 @@ const PaymentModal = ({ booking, clientSecret, action }: PaymentModalProps) => {
 
     if (result.error) {
       console.error(result.error.message);
+      setErrorMessage(result.error.message ?? "Payment failed. Please try again.");
+      setIsPaymentInprogress(false);
     } else if (result.paymentIntent?.status === "succeeded") {
       action.onPaymentSuccess();
       setIsPaymentInprogress(false);
@@ -96,12 +100,12 @@ const PaymentModal = ({ booking, clientSecret, action }: PaymentModalProps) => {
 
   return (
     <div
-      className="fixed inset-0 z-[500] flex items-center justify-center p-4"
+      className="animate-fadeIn fixed inset-0 z-[500] flex items-center justify-center p-4"
       style={{ background: "rgba(0,0,0,0.65)" }}
       onClick={(e) => e.target === e.currentTarget && action.onClose()}
     >
       <div
-        className="w-full max-h-[90vh] max-w-[35vw] bg-dark-700 border border-white/10 rounded-l-lg overflow-y-auto"
+        className="animate-scaleIn w-full max-h-[90vh] max-w-[92vw] sm:max-w-[480px] lg:max-w-[35vw] bg-dark-700 border border-white/10 rounded-2xl overflow-y-auto"
         style={{ boxShadow: "0 32px 80px rgba(0,0,0,0.6)" }}
       >
         <div className="p-6">
@@ -109,8 +113,7 @@ const PaymentModal = ({ booking, clientSecret, action }: PaymentModalProps) => {
           <div className="flex items-start justify-between mb-5">
             <div>
               <h2
-                className="text-[20px] font-medium text-[#e8e6e1] leading-tight"
-                style={{ fontFamily: "'Playfair Display', serif" }}
+                className="font-serif text-[20px] font-medium text-[#e8e6e1] leading-tight"
               >
                 Payment Details
               </h2>
@@ -120,7 +123,8 @@ const PaymentModal = ({ booking, clientSecret, action }: PaymentModalProps) => {
             </div>
             <button
               onClick={action.onClose}
-              className="w-[30px] h-[30px] rounded-full bg-white/[0.07] border border-white/10 text-muted-dim text-[13px] flex items-center justify-center cursor-pointer hover:bg-white/[0.12] hover:text-[#e8e6e1] transition-all flex-shrink-0"
+              aria-label="Close payment modal"
+              className="hover-scale w-11 h-11 rounded-full bg-white/[0.07] border border-white/10 text-muted-dim text-[13px] flex items-center justify-center cursor-pointer hover:bg-white/[0.12] hover:text-[#e8e6e1] transition-all flex-shrink-0"
             >
               ✕
             </button>
@@ -130,8 +134,7 @@ const PaymentModal = ({ booking, clientSecret, action }: PaymentModalProps) => {
           <div className="flex items-center justify-between bg-dark-900 border border-white/[0.07] rounded-xl px-4 py-3 mb-3">
             <div className="flex items-center gap-2">
               <span
-                className="w-2 h-2 rounded-full bg-gold flex-shrink-0"
-                style={{ animation: "statusPulse 2s ease-in-out infinite" }}
+                className="w-2 h-2 rounded-full bg-gold flex-shrink-0 animate-pulse-glow"
               />
               <span className="text-[11px] font-semibold text-gold uppercase tracking-[0.05em]">
                 {booking.status}
@@ -140,12 +143,12 @@ const PaymentModal = ({ booking, clientSecret, action }: PaymentModalProps) => {
           </div>
 
           {/* Booking info */}
-          <div className="bg-dark-900 border border-white/[0.07] rounded-xl p-4 mb-4 flex gap-4 items-start">
+          <div className="bg-dark-900 border border-white/[0.07] rounded-xl p-4 mb-4 flex flex-col sm:flex-row gap-4 items-start">
             <div className="w-[25%] min-w-[80px] aspect-square rounded-[10px] bg-dark-600 flex-shrink-0 overflow-hidden">
               <img
                 src={imageBaseUrl + booking.imageUrl}
                 alt={booking.title}
-                className="w-full h-full object-cover"
+                className="zoom-img w-full h-full object-cover"
               />
             </div>
             <div className="flex flex-col justify-between text-[13px] text-white my-auto gap-1">
@@ -172,18 +175,20 @@ const PaymentModal = ({ booking, clientSecret, action }: PaymentModalProps) => {
           </div>
 
           {/* Pricing */}
-          <div className="bg-dark-900 border border-white/[0.07] rounded-xl px-4 py-4 mb-5">
+          <div className="animate-fadeInUp bg-dark-900 border border-white/[0.07] rounded-xl px-4 py-4 mb-5">
             <div className="flex justify-between text-[13px] py-1">
-              <span className="text-muted-dim">Property Rate</span>
-              <span className="text-[#e8e6e1]">{formatPHP(booking.price)}</span>
+              <span className="text-muted-dim">
+                {formatPHP(booking.price)} × {totalNights}{" "}
+                {totalNights === 1 ? "night" : "nights"}
+              </span>
+              <span className="text-[#e8e6e1]">{formatPHP(totalPrice)}</span>
             </div>
             <div className="border-t border-white/[0.06] mt-2 pt-3 flex items-center justify-between">
               <span className="text-[14px] font-medium text-[#e8e6e1]">
                 Total due
               </span>
               <span
-                className="text-[22px] text-gold"
-                style={{ fontFamily: "'Playfair Display', serif" }}
+                className="font-serif text-[22px] text-gold"
               >
                 {formatPHP(totalPrice)}
               </span>
@@ -208,7 +213,9 @@ const PaymentModal = ({ booking, clientSecret, action }: PaymentModalProps) => {
                 {/* Mastercard */}
                 <span
                   className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white/[0.07] border border-white/[0.08]"
-                  style={{ opacity: brand === "mc" || !brand ? 1 : 0.35 }}
+                  style={{
+                    opacity: brand === "mastercard" || !brand ? 1 : 0.35,
+                  }}
                 >
                   <span className="w-3 h-3 rounded-full bg-red-500 opacity-90 inline-block" />
                   <span className="w-3 h-3 rounded-full bg-amber-400 opacity-90 -ml-1.5 inline-block" />
@@ -257,7 +264,7 @@ const PaymentModal = ({ booking, clientSecret, action }: PaymentModalProps) => {
                 placeholder="Alex Reyes"
                 value={cardName}
                 onChange={(e) => setCardName(e.target.value.toUpperCase())}
-                className="w-full bg-dark-700 border rounded-xl px-4 py-3 text-[14px] text-[#e8e6e1] placeholder:text-white/20 outline-none transition-all"
+                className="s-input w-full bg-dark-700 border rounded-xl px-4 py-3 text-[14px] text-[#e8e6e1] placeholder:text-white/20 outline-none transition-all"
                 style={{
                   borderColor: "rgba(255,255,255,0.08)",
                   fontFamily: "'DM Mono', monospace",
@@ -338,8 +345,11 @@ const PaymentModal = ({ booking, clientSecret, action }: PaymentModalProps) => {
           </div>
 
           {/* Pay button */}
+          {errorMessage && (
+            <p className="text-red-400 text-[12px] mb-2 text-center">{errorMessage}</p>
+          )}
           <button
-            className="w-full bg-gold text-dark-900 border-none rounded-xl py-[14px] text-[14px] font-semibold cursor-pointer hover:bg-gold-light transition-colors flex items-center justify-center gap-2"
+            className="relative overflow-hidden shine btn-press w-full bg-gold text-dark-900 border-none rounded-xl py-[14px] text-[14px] font-semibold cursor-pointer hover:bg-gold-light transition-colors flex items-center justify-center gap-2"
             onClick={handlePay}
             disabled={isPaymentInprogress}
           >
@@ -347,13 +357,6 @@ const PaymentModal = ({ booking, clientSecret, action }: PaymentModalProps) => {
           </button>
         </div>
       </div>
-
-      <style>{`
-        @keyframes statusPulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.45; transform: scale(0.8); }
-        }
-      `}</style>
     </div>
   );
 };

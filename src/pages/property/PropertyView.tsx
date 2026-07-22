@@ -14,7 +14,6 @@ import { bookProperty, reserveProperty } from "../../api/bookProperty";
 import BookingRequestModal from "../../components/modals/BookingRequestModal";
 import { defaultBooking, type Booking } from "../bookings/BookingTypes";
 import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 
 const PropertyView = () => {
   const location = useLocation();
@@ -107,32 +106,32 @@ const PropertyView = () => {
   if (loading) {
     return (
       <div
-        className="s-screen bg-dark-800 min-h-[520px] relative"
+        className="s-screen bg-dark-800 min-h-[520px] relative p-4 sm:p-8"
         id="sc-detail"
       >
-        <h2>Loading property details...</h2>
+        <h2 className="font-serif text-[20px] text-primary">
+          Loading property details
+          <span className="typing-dots"><span></span><span></span><span></span></span>
+        </h2>
       </div>
     );
   }
 
   return (
-    <div className="s-screen bg-dark-800 min-h-[520px] relative" id="sc-detail">
+    <div className="s-screen bg-dark-800 min-h-[520px] relative page-enter" id="sc-detail">
       <div className="relative w-full h-[320px] bg-dark-700 overflow-hidden">
         <PropertySlider images={images} />
       </div>
-      <div
-        className="grid gap-6 px-8 py-6"
-        style={{ gridTemplateColumns: "1fr 320px" }}
-      >
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 px-4 sm:px-8 py-6">
         {/* Left: Property details */}
         <div>
-          <h1 className="font-serif text-[26px] font-medium text-[#e8e6e1] mb-1">
+          <h1 className="font-serif text-[26px] font-medium text-primary mb-1 text-gradient-gold">
             {property.title}
           </h1>
           <div className="text-[13px] text-muted-faint mb-4 flex items-center gap-1">
             📍 {property.address} · ★ 4.9 (24 reviews)
           </div>
-          <div className="flex gap-5 mb-5 flex-wrap">
+          <div className="flex gap-5 mb-5 flex-wrap animate-fadeInUp">
             <div className="flex items-center gap-1.5 text-[13px] text-muted">
               👤 {property.maxGuest}{" "}
               {property.maxGuest > 1 ? "guests" : "guest"}
@@ -156,8 +155,8 @@ const PropertyView = () => {
         </div>
 
         {/* Right: Schedule and Booking */}
-        <div className="bg-dark-700 border border-white/[0.09] rounded-[14px] p-5 sticky top-20">
-          <div className="font-serif text-[22px] text-[#e8e6e1] mb-1">
+        <div className="bg-dark-700 border border-white/[0.09] rounded-[14px] p-5 lg:sticky lg:top-20 glass animate-fadeInRight">
+          <div className="font-serif text-[22px] text-primary mb-1">
             ₱{property.price}{" "}
             <span className="text-[13px] font-sans text-muted-faint font-normal">
               / night
@@ -183,7 +182,7 @@ const PropertyView = () => {
                 maxDate={booking.end}
                 placeholderText="Select date"
                 dateFormat="MMM d, yyyy"
-                className="text-[13px] text-[#e8e6e1] outline-none cursor-pointer"
+                className="text-[13px] text-primary outline-none cursor-pointer"
               />
             </div>
 
@@ -204,7 +203,7 @@ const PropertyView = () => {
                 minDate={booking.start || new Date()}
                 placeholderText="Select date"
                 dateFormat="MMM d, yyyy"
-                className="text-[13px] text-[#e8e6e1] outline-none cursor-pointer"
+                className="text-[13px] text-primary outline-none cursor-pointer"
               />
             </div>
           </div>
@@ -221,7 +220,7 @@ const PropertyView = () => {
                 : 0}{" "}
               nights
             </span>
-            <span className="text-[#e6e6e1] font-medium">
+            <span className="text-primary font-medium">
               ₱{calculateTotalPrice().toLocaleString("en-PH")}
             </span>
           </div>
@@ -234,7 +233,7 @@ const PropertyView = () => {
 
           {/* Rent and Reserve Buttons */}
           <button
-            className="w-full bg-gold text-dark-900 border-none rounded-[10px] py-[13px] text-[14px] font-semibold cursor-pointer hover:bg-gold-light transition-colors mb-2"
+            className="w-full bg-gold text-dark-900 border-none rounded-[10px] py-[13px] text-[14px] font-semibold cursor-pointer hover:bg-gold-light transition-colors mb-2 relative overflow-hidden shine btn-press"
             onClick={() => {
               setRequestBookingModal(!requestBookingModal);
               setReserveBookingModal(false);

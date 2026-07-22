@@ -7,15 +7,20 @@ import type { summary, property } from "../../types/dashboard";
 const OwnerHome = () => {
   const [summary, setSummary] = useState<summary>();
   const [properties, setProperties] = useState<property[]>();
+  const [loading, setLoading] = useState<boolean>(true);
 
   const imageBaseUrl = import.meta.env.VITE_CLOUD_PUBLIC_KEY;
 
   const loadDashboard = async () => {
-    const res = await fetchDashboard();
+    try {
+      const res = await fetchDashboard();
 
-    if (res?.success) {
-      setSummary(res.summary);
-      setProperties(res.properties);
+      if (res?.success) {
+        setSummary(res.summary);
+        setProperties(res.properties);
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -23,10 +28,45 @@ const OwnerHome = () => {
     loadDashboard();
   }, []);
 
+  if (loading) {
+    return (
+      <div className="page-enter min-h-[83vh] active bg-dark-800 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-dark-700 border border-white/[0.07] rounded-2xl p-6 animate-pulse">
+              <div className="h-3 bg-white/10 rounded w-1/2 mb-4"></div>
+              <div className="h-8 bg-white/10 rounded w-3/4 mb-2"></div>
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <div className="lg:col-span-2 bg-dark-700 border border-white/[0.07] rounded-2xl p-6 animate-pulse">
+            <div className="h-5 bg-white/10 rounded w-1/3 mb-6"></div>
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="flex gap-4 mb-4">
+                <div className="w-20 h-20 bg-white/10 rounded-lg flex-shrink-0"></div>
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-white/10 rounded w-2/3"></div>
+                  <div className="h-3 bg-white/10 rounded w-1/2"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="bg-dark-700 border border-white/[0.07] rounded-2xl p-6 animate-pulse">
+            <div className="h-5 bg-white/10 rounded w-1/2 mb-6"></div>
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-12 bg-white/10 rounded mb-4"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="animate-fadeIn h-[83vh] active bg-dark-800 overflow-y-auto p-8">
+    <div className="page-enter min-h-[83vh] active bg-dark-800 overflow-y-auto p-4 sm:p-6 lg:p-8">
       {/* Stats Grid */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 stagger-children">
         <div className="bg-dark-700 border border-white/[0.07] rounded-2xl p-6 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-24 h-24 bg-gold/5 rounded-full -mr-12 -mt-12"></div>
           <div className="text-[11px] text-muted-faint uppercase tracking-widest mb-2">
@@ -58,7 +98,8 @@ const OwnerHome = () => {
           </div>
           <div className="w-full h-2 bg-dark-900 rounded-full mt-3 overflow-hidden">
             <div
-              className={`h-full bg-gold w-[${summary?.occupancyRate}%]`}
+              className="h-full bg-gold transition-all duration-700"
+              style={{ width: `${summary?.occupancyRate ?? 0}%` }}
             ></div>
           </div>
         </div>
@@ -77,26 +118,26 @@ const OwnerHome = () => {
       </div>
 
       {/* Two Column Layout */}
-      <div className="grid grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         {/* Properties Performance */}
-        <div className="col-span-2 bg-dark-700 border border-white/[0.07] rounded-2xl p-6">
+        <div className="lg:col-span-2 bg-dark-700 border border-white/[0.07] rounded-2xl p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="font-serif text-[20px] text-white">
               Properties Performance
             </h2>
             <Link
               to="/manage"
-              className="text-[12px] text-gold hover:text-gold-light transition-colors"
+              className="text-[12px] text-gold hover:text-gold-light transition-colors link-underline"
             >
               View All →
             </Link>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4 stagger-children">
             {/* Property Item */}
-            {properties ? (
+            {properties && properties.length > 0 ? (
               properties.map((property: property) => (
-                <div className="bg-dark-900 border border-white/[0.07] rounded-xl p-4 flex items-center gap-4 hover:border-gold/30 transition-all cursor-pointer">
+                <div key={property.id} className="animate-fadeInUp bg-dark-900 border border-white/[0.07] rounded-xl p-4 flex items-center gap-4 hover:border-gold/30 transition-all cursor-pointer hover-lift">
                   <img
                     src={imageBaseUrl + "/" + property.imageUrl + "?w=400"}
                     alt="Property"
@@ -138,7 +179,19 @@ const OwnerHome = () => {
                 </div>
               ))
             ) : (
-              <div>No Properties</div>
+              <div className="flex flex-col items-center justify-center py-12 text-center animate-fadeInUp">
+                <div className="text-[48px] mb-4">🏠</div>
+                <h3 className="font-serif text-lg text-white mb-2">No properties yet</h3>
+                <p className="text-sm text-muted-faint mb-6 max-w-[280px]">
+                  Add your first property to start tracking performance and revenue.
+                </p>
+                <Link
+                  to="/manage"
+                  className="px-5 py-2.5 bg-gold text-dark-900 text-sm font-medium rounded-lg hover:bg-gold-light transition-colors btn-press"
+                >
+                  Manage Properties
+                </Link>
+              </div>
             )}
           </div>
         </div>

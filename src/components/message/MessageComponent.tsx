@@ -19,29 +19,20 @@ const MessageComponent = ({
 
   const isOwn = message.userId === userId;
 
-  const handleMouseEnter = () => {
-    setShowTime(true);
-  };
-
-  const handleMouseLeave = () => {
-    setShowTime(false);
-  };
-
   return (
     <div className={`flex ${isOwn ? "justify-end" : "justify-start"} gap-2`}>
       {/* Message Bubble */}
       <div
         className={`${
           isOwn
-            ? "bg-gold/20 border border-gold/25 text-[#e8e6e1] rounded-xl p-[14px] max-w-[300px] text-[13px] leading-[1.5]"
-            : "bg-dark-700 border border-gold/25 text-white rounded-xl p-[14px] max-w-[300px] text-[13px] leading-[1.5]"
+            ? "bg-gold/20 border border-gold/25 text-primary rounded-xl p-[14px] max-w-[80%] md:max-w-[420px] text-[13px] leading-[1.5]"
+            : "bg-dark-700 border border-white/[0.07] text-white rounded-xl p-[14px] max-w-[80%] md:max-w-[420px] text-[13px] leading-[1.5]"
         }`}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
+        onClick={() => setShowTime((prev) => !prev)}
       >
         {/* Sender's Name (Only for incoming messages) */}
         {!isOwn && (
-          <h5 className="font-medium text-[#e8e6e1] text-[13px] mb-1">
+          <h5 className="font-medium text-primary text-[13px] mb-1">
             {message.name}
           </h5>
         )}
@@ -55,7 +46,7 @@ const MessageComponent = ({
 
         {/* Time Display (Appears on hover) */}
         <h6
-          className={`text-[10px] text-muted-faint ${showTime ? "block" : "hidden"}`}
+          className={`text-[10px] text-muted-faint transition-all duration-200 ${showTime ? "opacity-100 max-h-8" : "opacity-0 max-h-0 overflow-hidden"}`}
         >
           {timeText}
         </h6>

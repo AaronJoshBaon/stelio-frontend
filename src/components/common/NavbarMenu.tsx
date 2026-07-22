@@ -4,14 +4,27 @@ import type { UserContextTypes } from "../../context/UserContext";
 interface Props {
   userData: UserContextTypes;
   logout: () => void;
+  open: boolean;
+  onNavigate?: () => void;
 }
 
-export default function NavbarMenu({ userData, logout }: Props) {
+export default function NavbarMenu({
+  userData,
+  logout,
+  open,
+  onNavigate,
+}: Props) {
   return (
-    <ul className="dropdown-menu absolute right-0 mt-2 bg-dark-700 border border-white/[0.12] rounded-lg shadow-lg w-[150px] grid col-1">
+    <ul
+      role="menu"
+      data-open={open}
+      className="menu-pop dropdown-menu absolute right-0 mt-2 bg-dark-700 border border-white/[0.12] rounded-xl shadow-lg w-[160px] grid gap-0.5 p-1 z-50"
+    >
       <Link
         to="/profile"
-        className="link px-6 py-3 text-[#e8e6e1] text-sm hover:bg-[#00ADB5]/[0.1] rounded-lg transition-colors duration-300 w-full text-center"
+        role="menuitem"
+        onClick={onNavigate}
+        className="link px-5 py-3 text-primary text-sm hover:bg-gold/10 hover:text-gold rounded-lg transition-colors duration-200 w-full text-center"
       >
         Profile
       </Link>
@@ -19,18 +32,25 @@ export default function NavbarMenu({ userData, logout }: Props) {
       {userData.role === "RENTER" && (
         <Link
           to="/my-bookings"
-          className="link px-6 py-3 text-[#e8e6e1] text-sm hover:bg-[#00ADB5]/[0.1] rounded-lg transition-colors duration-300 w-full text-center"
+          role="menuitem"
+          onClick={onNavigate}
+          className="link px-5 py-3 text-primary text-sm hover:bg-gold/10 hover:text-gold rounded-lg transition-colors duration-200 w-full text-center"
         >
           My Bookings
         </Link>
       )}
 
-      <div
-        onClick={logout}
-        className="px-6 py-3 w-full text-[#e6e6e6] text-sm cursor-pointer hover:bg-[#00ADB5]/[0.1] rounded-lg transition-colors duration-300 text-center"
+      <button
+        type="button"
+        role="menuitem"
+        onClick={() => {
+          onNavigate?.();
+          logout();
+        }}
+        className="px-5 py-3 w-full text-primary text-sm cursor-pointer hover:bg-red-500/10 hover:text-red-400 rounded-lg transition-colors duration-200 text-center"
       >
         Logout
-      </div>
+      </button>
     </ul>
   );
 }

@@ -8,12 +8,14 @@ const BookingCalendar = () => {
   const [value, onChange] = useState<Value>(new Date());
 
   return (
-    <Calendar
-      onChange={onChange}
-      value={value}
-      className="booking-calendar"
-      showNeighboringMonth={false}
-    />
+    <div className="animate-fadeInUp">
+      <Calendar
+        onChange={onChange}
+        value={value}
+        className="booking-calendar"
+        showNeighboringMonth={false}
+      />
+    </div>
   );
 };
 
