@@ -22,6 +22,10 @@ export const createProperty = async (info: PropertyTypes) => {
         });
     }
 
+    // On create every image is a newly uploaded File, so the selected index maps
+    // directly to the order the images were appended above.
+    formData.append("primaryImageIndex", String(info.primaryIndex ?? 0));
+
     try {
         const res = await api.post("/properties", formData);
 
@@ -59,6 +63,23 @@ export const updateProperty = async (info: PropertyTypes, propertyId: string) =>
         info.deletedImages.forEach((image) => {
             formData.append(`removedImages`, image);
         });
+    }
+
+    // Tell the backend which image is the primary (display) one. On edit the
+    // images array mixes existing images (PropertyImage) with newly uploaded
+    // Files, so we send either the existing image id or the index within the
+    // newly uploaded images.
+    if (info.primaryIndex !== null && info.primaryIndex < info.images.length) {
+        const primary = info.images[info.primaryIndex];
+
+        if (primary instanceof File) {
+            const primaryNewImageIndex = info.images
+                .slice(0, info.primaryIndex)
+                .filter((image) => image instanceof File).length;
+            formData.append("primaryNewImageIndex", String(primaryNewImageIndex));
+        } else {
+            formData.append("primaryImageId", primary.id);
+        }
     }
 
     try {

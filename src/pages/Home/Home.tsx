@@ -7,7 +7,7 @@ import { useUserData } from "../../context/UserContext";
 import { useNavigate } from "react-router-dom";
 import SkeletonLoading from "../../components/common/SkeletonLoading";
 import DatePicker from "react-datepicker";
-import { FiMapPin, FiCalendar, FiUsers, FiTag, FiSearch, FiX } from "react-icons/fi";
+import { FiMapPin, FiCalendar, FiUsers, FiTag, FiSearch, FiX, FiChevronDown } from "react-icons/fi";
 
 // Popular destinations shown before the user types; merged with the real
 // cities/addresses of loaded listings so suggestions always reflect inventory.
@@ -47,6 +47,8 @@ const Home = () => {
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
   const [activeField, setActiveField] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState<boolean>(false);
+  // On mobile the search bar is collapsed behind a compact summary chip.
+  const [mobileSearchOpen, setMobileSearchOpen] = useState<boolean>(false);
   const [highlightedCity, setHighlightedCity] = useState<number>(-1);
   // Bumped on every explicit search so the fetch effect re-runs even when the
   // page is already 0 (state resets are read on the next render, avoiding a
@@ -66,10 +68,17 @@ const Home = () => {
 
   const runSearch = () => {
     setActiveField(null);
+    setMobileSearchOpen(false);
     setIsSearching(true);
     setCurrentPage(0);
     setSearchNonce((n) => n + 1);
   };
+
+  const fmtShort = (d: Date) =>
+    new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const mobileDateLabel = checkOut
+    ? `${fmtShort(checkIn)} – ${fmtShort(checkOut)}`
+    : fmtShort(checkIn);
 
   const clearFilters = () => {
     setAddress("");
@@ -178,6 +187,8 @@ const Home = () => {
         setCurrentPage(res.properties.pageable.pageNumber);
         setTotalPages(res.properties.totalPages);
       }
+
+      console.log(res.properties.content);
     } catch (e: any) {
       console.error("Error fetching properties:", e);
     } finally {
@@ -202,10 +213,44 @@ const Home = () => {
       <div className="p-4 sm:p-6 lg:p-8">
         {/* Search Bar */}
         <div className="mb-8">
-          <div className="relative flex flex-col sm:flex-row sm:items-stretch bg-dark-700 border border-white/[0.08] rounded-2xl sm:rounded-[56px] sm:p-1.5 overflow-visible transition-shadow hover:shadow-[0_10px_40px_-12px_rgba(0,0,0,0.6)]">
+          {/* Mobile: collapsed search trigger */}
+          <button
+            type="button"
+            aria-expanded={mobileSearchOpen}
+            aria-label="Toggle search filters"
+            onClick={(e) => {
+              e.stopPropagation();
+              setMobileSearchOpen((o) => !o);
+            }}
+            className="lg:hidden w-full flex items-center gap-3 bg-dark-700 border border-white/[0.08] rounded-full px-4 py-3 text-left transition-colors hover:bg-white/[0.03] btn-press"
+          >
+            <span className="w-9 h-9 rounded-full bg-gold/15 flex items-center justify-center flex-shrink-0">
+              <FiSearch size={16} className="text-gold" />
+            </span>
+            <span className="flex-1 min-w-0">
+              <span className="block text-[13px] text-primary truncate">
+                {address || "Anywhere"}
+              </span>
+              <span className="block text-[11px] text-muted-faint truncate">
+                {mobileDateLabel} · {minGuests}{" "}
+                {minGuests === 1 ? "guest" : "guests"}
+                {minPrice || maxPrice ? " · Price set" : ""}
+              </span>
+            </span>
+            <FiChevronDown
+              size={18}
+              className={`text-muted-faint flex-shrink-0 transition-transform duration-200 ${mobileSearchOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+
+          {/* Full search: collapsible on mobile, always shown on desktop */}
+          <div
+            className={`${mobileSearchOpen ? "block animate-fadeInDown" : "hidden"} lg:block mt-3 lg:mt-0`}
+          >
+          <div className="relative flex flex-col lg:flex-row lg:items-stretch bg-dark-700 border border-white/[0.08] rounded-2xl lg:rounded-[56px] lg:p-1.5 overflow-visible transition-shadow hover:shadow-[0_10px_40px_-12px_rgba(0,0,0,0.6)]">
             {/* City */}
             <div
-              className={`group relative w-full sm:flex-1 flex items-center gap-3 px-5 py-3 border-b sm:border-b-0 sm:border-r border-white/[0.07] cursor-pointer transition-colors sm:rounded-l-[56px] ${activeField === "location" ? "bg-white/[0.06]" : "hover:bg-white/[0.04]"}`}
+              className={`group relative w-full lg:flex-1 flex items-center gap-3 px-5 py-3 border-b lg:border-b-0 lg:border-r border-white/[0.07] cursor-pointer transition-colors lg:rounded-l-[56px] ${activeField === "location" ? "bg-white/[0.06]" : "hover:bg-white/[0.04]"}`}
               onClick={(e) => {
                 toggleField("location");
                 e.stopPropagation();
@@ -300,7 +345,7 @@ const Home = () => {
             </div>
 
             {/* Check-in */}
-            <div className="relative w-full sm:flex-1 flex items-center gap-3 px-5 py-3 border-b sm:border-b-0 sm:border-r border-white/[0.07] transition-colors hover:bg-white/[0.04] z-10">
+            <div className="relative w-full lg:flex-1 flex items-center gap-3 px-5 py-3 border-b lg:border-b-0 lg:border-r border-white/[0.07] transition-colors hover:bg-white/[0.04] z-10">
               <FiCalendar size={17} className="shrink-0 text-gold/70" />
               <div className="min-w-0 flex-1">
                 <div className="text-[10px] text-muted-faint uppercase tracking-widest mb-0.5">
@@ -326,7 +371,7 @@ const Home = () => {
             </div>
 
             {/* Checkout */}
-            <div className="relative w-full sm:flex-1 flex items-center gap-3 px-5 py-3 border-b sm:border-b-0 sm:border-r border-white/[0.07] transition-colors hover:bg-white/[0.04] z-10">
+            <div className="relative w-full lg:flex-1 flex items-center gap-3 px-5 py-3 border-b lg:border-b-0 lg:border-r border-white/[0.07] transition-colors hover:bg-white/[0.04] z-10">
               <FiCalendar size={17} className="shrink-0 text-gold/70" />
               <div className="min-w-0 flex-1">
                 <div className="text-[10px] text-muted-faint uppercase tracking-widest mb-0.5">
@@ -351,7 +396,7 @@ const Home = () => {
             </div>
 
             {/* Guests */}
-            <div className="relative w-full sm:flex-1 flex items-center gap-3 px-5 py-3 border-b sm:border-b-0 sm:border-r border-white/[0.07]">
+            <div className="relative w-full lg:flex-1 flex items-center gap-3 px-5 py-3 border-b lg:border-b-0 lg:border-r border-white/[0.07]">
               <FiUsers size={17} className="shrink-0 text-gold/70" />
               <div className="min-w-0 flex-1">
                 <div className="text-[10px] text-muted-faint uppercase tracking-widest mb-0.5">
@@ -392,7 +437,7 @@ const Home = () => {
 
             {/* Price */}
             <div
-              className={`group relative w-full sm:flex-1 flex items-center gap-3 px-5 py-3 cursor-pointer transition-colors z-10 ${activeField === "price" ? "bg-white/[0.06]" : "hover:bg-white/[0.04]"}`}
+              className={`group relative w-full lg:flex-1 flex items-center gap-3 px-5 py-3 cursor-pointer transition-colors z-10 ${activeField === "price" ? "bg-white/[0.06]" : "hover:bg-white/[0.04]"}`}
               onClick={(e) => {
                 toggleField("price");
                 e.stopPropagation();
@@ -420,7 +465,7 @@ const Home = () => {
               </div>
               {activeField === "price" && (
                 <div
-                  className="absolute top-[calc(100%+10px)] right-0 sm:right-auto bg-dark-600 w-72 border border-white/10 rounded-[20px] z-30 overflow-hidden animate-scaleIn shadow-xl"
+                  className="absolute top-[calc(100%+10px)] right-0 lg:right-auto bg-dark-600 w-72 max-w-[calc(100vw-2rem)] border border-white/10 rounded-[20px] z-30 overflow-hidden animate-scaleIn shadow-xl"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="p-[18px_20px] grid gap-3">
@@ -479,14 +524,14 @@ const Home = () => {
               aria-label="Search properties"
               onClick={runSearch}
               disabled={isSearching}
-              className="bg-gold w-full sm:w-auto h-11 sm:min-w-11 rounded-xl sm:rounded-full mx-3 my-3 sm:mx-1 sm:my-auto px-5 sm:px-0 flex items-center justify-center gap-2 flex-shrink-0 border-none hover:bg-gold-light transition-all cursor-pointer relative overflow-hidden shine btn-press disabled:opacity-70 disabled:cursor-not-allowed"
+              className="bg-gold w-full lg:w-auto h-11 lg:min-w-11 rounded-xl lg:rounded-full mx-3 my-3 lg:mx-1 lg:my-auto px-5 lg:px-0 flex items-center justify-center gap-2 flex-shrink-0 border-none hover:bg-gold-light transition-all cursor-pointer relative overflow-hidden shine btn-press disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isSearching ? (
                 <span className="w-4 h-4 border-2 border-dark-900/30 border-t-dark-900 rounded-full animate-spin" />
               ) : (
                 <FiSearch size={18} className="text-dark-900" strokeWidth={2.4} />
               )}
-              <span className="sm:hidden text-dark-900 text-[14px] font-semibold">
+              <span className="lg:hidden text-dark-900 text-[14px] font-semibold">
                 {isSearching ? "Searching…" : "Search"}
               </span>
             </button>
@@ -505,6 +550,7 @@ const Home = () => {
               </button>
             </div>
           )}
+          </div>
         </div>
 
         {/* Listings Grid */}

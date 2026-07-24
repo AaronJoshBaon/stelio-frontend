@@ -10,6 +10,7 @@ import {
 export type PropertyImage = {
   id: string;
   url: string;
+  isPrimary?: boolean;
 };
 
 export type PropertyTypes = {
@@ -25,6 +26,8 @@ export type PropertyTypes = {
   propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "CABIN";
   images: (File | PropertyImage)[];
   deletedImages: string[];
+  // Index into `images` of the primary (display) image, or null when unselected.
+  primaryIndex: number | null;
 };
 
 type PropertyContextType = {
@@ -45,6 +48,7 @@ export const propertyData: PropertyTypes = {
   propertyType: "APARTMENT",
   images: [],
   deletedImages: [],
+  primaryIndex: null,
 };
 
 export const PropertyContext = createContext<PropertyContextType>({

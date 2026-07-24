@@ -108,7 +108,7 @@ const PaymentModal = ({ booking, clientSecret, action }: PaymentModalProps) => {
         className="animate-scaleIn w-full max-h-[90vh] max-w-[92vw] sm:max-w-[480px] lg:max-w-[35vw] bg-dark-700 border border-white/10 rounded-2xl overflow-y-auto"
         style={{ boxShadow: "0 32px 80px rgba(0,0,0,0.6)" }}
       >
-        <div className="p-6">
+        <div className="p-5 sm:p-6">
           {/* Header */}
           <div className="flex items-start justify-between mb-5">
             <div>
@@ -143,15 +143,15 @@ const PaymentModal = ({ booking, clientSecret, action }: PaymentModalProps) => {
           </div>
 
           {/* Booking info */}
-          <div className="bg-dark-900 border border-white/[0.07] rounded-xl p-4 mb-4 flex flex-col sm:flex-row gap-4 items-start">
-            <div className="w-[25%] min-w-[80px] aspect-square rounded-[10px] bg-dark-600 flex-shrink-0 overflow-hidden">
+          <div className="bg-dark-900 border border-white/[0.07] rounded-xl p-4 mb-4 flex flex-row gap-4 items-center">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-[10px] bg-dark-600 flex-shrink-0 overflow-hidden">
               <img
                 src={imageBaseUrl + booking.imageUrl}
                 alt={booking.title}
                 className="zoom-img w-full h-full object-cover"
               />
             </div>
-            <div className="flex flex-col justify-between text-[13px] text-white my-auto gap-1">
+            <div className="flex flex-col justify-between text-[13px] text-white my-auto gap-1 min-w-0">
               <div>
                 <span className="text-muted-faint">Property:</span>{" "}
                 <span className="font-medium">{booking.title}</span>
@@ -349,11 +349,18 @@ const PaymentModal = ({ booking, clientSecret, action }: PaymentModalProps) => {
             <p className="text-red-400 text-[12px] mb-2 text-center">{errorMessage}</p>
           )}
           <button
-            className="relative overflow-hidden shine btn-press w-full bg-gold text-dark-900 border-none rounded-xl py-[14px] text-[14px] font-semibold cursor-pointer hover:bg-gold-light transition-colors flex items-center justify-center gap-2"
+            className="relative overflow-hidden shine btn-press w-full bg-gold text-dark-900 border-none rounded-xl py-[14px] text-[14px] font-semibold cursor-pointer hover:bg-gold-light transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
             onClick={handlePay}
             disabled={isPaymentInprogress}
           >
-            {isPaymentInprogress ? "In-progress..." : "Pay"}
+            {isPaymentInprogress ? (
+              <>
+                <span className="w-4 h-4 border-2 border-dark-900/30 border-t-dark-900 rounded-full animate-spin" />
+                Processing…
+              </>
+            ) : (
+              `Pay ${formatPHP(totalPrice)}`
+            )}
           </button>
         </div>
       </div>

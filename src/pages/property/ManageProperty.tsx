@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { deleteProperty, getMyProperties } from "../../api/property";
 import type { PropertyTypesView } from "../../pages/property/Propertytypes";
 import { propertyData, useProperty } from "../../context/PropertyContext";
-import { FaPencil, FaRegTrashCan } from "react-icons/fa6";
+import { FaPencil, FaPlus, FaRegTrashCan } from "react-icons/fa6";
 import EmptyState from "../../components/common/EmptyState";
 
 const ManageProperty = () => {
@@ -72,20 +72,28 @@ const ManageProperty = () => {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6 animate-fadeInDown">
         <h2 className="font-serif text-[24px] text-white">My Properties</h2>
 
-        <div className="flex flex-wrap gap-2">
-          <select className="s-input bg-dark-700 border border-white/10 rounded-lg px-4 py-2 text-[13px] text-muted outline-none">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <select className="s-input flex-1 sm:flex-none min-w-0 bg-dark-700 border border-white/10 rounded-lg px-4 py-2 text-[13px] text-muted outline-none">
             <option>All Types</option>
             <option>Condo</option>
             <option>House</option>
             <option>Villa</option>
           </select>
 
-          <select className="s-input bg-dark-700 border border-white/10 rounded-lg px-4 py-2 text-[13px] text-muted outline-none">
+          <select className="s-input flex-1 sm:flex-none min-w-0 bg-dark-700 border border-white/10 rounded-lg px-4 py-2 text-[13px] text-muted outline-none">
             <option>All Status</option>
             <option>Active</option>
             <option>Maintenance</option>
             <option>Inactive</option>
           </select>
+
+          <button
+            type="button"
+            onClick={() => navigate("/property/form")}
+            className="flex w-full sm:w-auto items-center justify-center gap-1.5 bg-gold text-dark-900 rounded-lg px-4 py-2 text-[13px] font-semibold cursor-pointer hover:bg-gold-light transition-colors btn-press shine relative overflow-hidden"
+          >
+            <FaPlus className="text-[11px]" /> Add Property
+          </button>
         </div>
       </div>
 
@@ -177,6 +185,22 @@ const ManageProperty = () => {
               </div>
             </div>
           ))}
+
+        {properties.length > 0 && (
+          <button
+            type="button"
+            onClick={() => navigate("/property/form")}
+            className="group flex flex-col items-center justify-center gap-3 min-h-[300px] rounded-2xl border-2 border-dashed border-white/[0.12] bg-dark-700/40 text-muted cursor-pointer hover:border-gold/60 hover:bg-dark-700 hover:text-gold transition-all card-interactive btn-press"
+          >
+            <div className="w-14 h-14 rounded-full border border-white/[0.12] bg-dark-800 flex items-center justify-center text-2xl transition-all group-hover:border-gold/50 group-hover:bg-gold/10 group-hover:text-gold">
+              <FaPlus />
+            </div>
+            <span className="text-[14px] font-medium">Add New Property</span>
+            <span className="text-[12px] text-muted-faint">
+              List another place to start earning
+            </span>
+          </button>
+        )}
       </div>
 
       {properties.length == 0 && (

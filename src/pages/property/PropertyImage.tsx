@@ -1,4 +1,10 @@
-import { FaImage, FaPencil, FaRegTrashCan } from "react-icons/fa6";
+import {
+  FaImage,
+  FaPencil,
+  FaRegStar,
+  FaRegTrashCan,
+  FaStar,
+} from "react-icons/fa6";
 import { useProperty } from "../../context/PropertyContext";
 import { type ChangeEvent, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -10,27 +16,50 @@ const PropertyImages = () => {
   const [hasError, setHasError] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
 
+  const imageBaseUrl = import.meta.env.VITE_CLOUD_PUBLIC_KEY;
+
   const handleAddImage = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const image = e.target.files[0];
       setData((prev) => ({
         ...prev,
         images: [...prev.images, image],
+        // Default the first uploaded image to be the primary (display) image.
+        primaryIndex: prev.primaryIndex ?? prev.images.length,
       }));
     }
   };
 
   const handleRemoveImage = (index: number) => {
-    const newFiles = data.images.filter((_, i) => i !== index);
-    const removedImage = data.images[index];
-    setData((prev) => ({
-      ...prev,
-      images: newFiles,
-      deletedImages:
-        removedImage instanceof File
-          ? [...(prev.deletedImages ?? [])]
-          : [...(prev.deletedImages ?? []), removedImage.id],
-    }));
+    setData((prev) => {
+      const removedImage = prev.images[index];
+      const newFiles = prev.images.filter((_, i) => i !== index);
+
+      // Keep the primary selection pointing at the correct image after removal.
+      let primaryIndex = prev.primaryIndex;
+      if (primaryIndex !== null) {
+        if (index === primaryIndex) {
+          primaryIndex = newFiles.length > 0 ? 0 : null;
+        } else if (index < primaryIndex) {
+          primaryIndex = primaryIndex - 1;
+        }
+      }
+
+      return {
+        ...prev,
+        images: newFiles,
+        deletedImages:
+          removedImage instanceof File
+            ? [...(prev.deletedImages ?? [])]
+            : [...(prev.deletedImages ?? []), removedImage.id],
+        primaryIndex,
+      };
+    });
+  };
+
+  const handleSetPrimary = (index: number) => {
+    setHasError(false);
+    setData((prev) => ({ ...prev, primaryIndex: index }));
   };
 
   const handleEditImage = (
@@ -51,6 +80,16 @@ const PropertyImages = () => {
     if (data.images.length < 1) {
       setHasError(true);
       setErrorMessage("Property Image is required");
+      return;
+    }
+
+    if (
+      data.primaryIndex === null ||
+      data.primaryIndex < 0 ||
+      data.primaryIndex >= data.images.length
+    ) {
+      setHasError(true);
+      setErrorMessage("Please select a primary image for the display");
       return;
     }
 
@@ -80,6 +119,11 @@ const PropertyImages = () => {
           </h1>
         </div>
 
+        <p className="text-[12px] text-muted-faint mb-5 -mt-2 animate-fadeInDown">
+          Tap the <FaStar className="inline text-gold text-[10px]" /> on a photo
+          to choose the primary image shown on your listing.
+        </p>
+
         <div className="grid place-items-center mb-7 mx-auto">
           <div className="flex items-center mb-2">
             <div className="w-10 h-10 rounded-full border-[1.5px] border-gold bg-gold text-dark-900 flex items-center justify-center text-[11px] font-medium transition-all duration-300">
@@ -107,41 +151,74 @@ const PropertyImages = () => {
 
         {/* Grid for Images */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 stagger-children">
-          {data.images.map((image, index) => (
-            <div
-              key={index}
-              className="image-card relative rounded-lg overflow-hidden bg-dark-700 border border-white/[0.1] shadow-md hover:shadow-lg card-interactive"
-            >
-              <img
-                src={
-                  image instanceof File
-                    ? URL.createObjectURL(image as File)
-                    : image.url
-                }
-                alt={`preview-${index}`}
-                className="w-full h-[200px] object-cover zoom-img"
-              />
-              <div className="absolute top-0 right-0 p-2 flex gap-2">
-                <button
-                  onClick={() => handleRemoveImage(index)}
-                  className="bg-red-500 w-10 h-10 text-white p-2 rounded-full hover:bg-red-600 transition-colors flex items-center justify-center"
-                  title="Remove image"
-                >
-                  <FaRegTrashCan className="text-xl" />
-                </button>
-                <label className="cursor-pointer w-10 h-10 flex items-center justify-center rounded-full bg-gold/20 border border-gold/30 text-gold hover:bg-gold/30 transition-colors">
-                  <FaPencil className=" hover:text-gray-100" />
-                  <input
-                    type="file"
-                    accept="image/*"
-                    hidden
-                    onChange={(e) => handleEditImage(e, index)}
-                    aria-label="Choose an image to upload"
-                  />
-                </label>
+          {data.images.map((image, index) => {
+            const isPrimary = index === data.primaryIndex;
+            return (
+              <div
+                key={index}
+                className={`image-card relative rounded-lg overflow-hidden bg-dark-700 border shadow-md hover:shadow-lg card-interactive transition-all ${
+                  isPrimary
+                    ? "border-gold ring-2 ring-gold"
+                    : "border-white/[0.1]"
+                }`}
+              >
+                <img
+                  src={
+                    image instanceof File
+                      ? URL.createObjectURL(image as File)
+                      : imageBaseUrl + "/" + image.url
+                  }
+                  alt={`preview-${index}`}
+                  className="w-full h-[200px] object-cover zoom-img"
+                />
+
+                {/* Primary (display) image badge */}
+                {isPrimary && (
+                  <div className="absolute top-2 left-2 flex items-center gap-1 bg-gold text-dark-900 text-[11px] font-semibold px-2.5 py-1 rounded-full shadow">
+                    <FaStar className="text-[10px]" /> Primary
+                  </div>
+                )}
+
+                <div className="absolute top-0 right-0 p-2 flex gap-2">
+                  <button
+                    onClick={() => handleSetPrimary(index)}
+                    className={`w-10 h-10 p-2 rounded-full flex items-center justify-center transition-colors border ${
+                      isPrimary
+                        ? "bg-gold text-dark-900 border-gold"
+                        : "bg-dark-900/60 text-gold border-gold/30 hover:bg-gold/30"
+                    }`}
+                    title={
+                      isPrimary ? "Primary image" : "Set as primary image"
+                    }
+                    aria-pressed={isPrimary}
+                  >
+                    {isPrimary ? (
+                      <FaStar className="text-lg" />
+                    ) : (
+                      <FaRegStar className="text-lg" />
+                    )}
+                  </button>
+                  <button
+                    onClick={() => handleRemoveImage(index)}
+                    className="bg-red-500 w-10 h-10 text-white p-2 rounded-full hover:bg-red-600 transition-colors flex items-center justify-center"
+                    title="Remove image"
+                  >
+                    <FaRegTrashCan className="text-xl" />
+                  </button>
+                  <label className="cursor-pointer w-10 h-10 flex items-center justify-center rounded-full bg-gold/20 border border-gold/30 text-gold hover:bg-gold/30 transition-colors">
+                    <FaPencil className=" hover:text-gray-100" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      hidden
+                      onChange={(e) => handleEditImage(e, index)}
+                      aria-label="Choose an image to upload"
+                    />
+                  </label>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {/* Add Image Button */}
           <label className="add-image-card flex flex-col items-center justify-center gap-2 p-5 rounded-lg bg-dark-700 border border-white/[0.15] hover:bg-dark-600 transition-colors cursor-pointer hover-glow">

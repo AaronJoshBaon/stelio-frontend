@@ -31,8 +31,22 @@ const PropertyForm = () => {
         setLoading(true);
         const res = await getPropertyById(id);
         if (res.success) {
-          setData(res.property);
-          setProperty(res.property);
+          const images = res.images ?? [];
+          const primaryIdx = images.findIndex(
+            (img: { isPrimary?: boolean }) => img.isPrimary,
+          );
+
+          const merged: PropertyTypes = {
+            ...data,
+            ...res.property,
+            images,
+            deletedImages: [],
+            primaryIndex:
+              primaryIdx >= 0 ? primaryIdx : images.length > 0 ? 0 : null,
+          };
+
+          setData(merged);
+          setProperty(merged);
         }
       } catch (e: any) {
       } finally {

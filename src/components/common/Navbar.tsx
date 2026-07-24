@@ -164,19 +164,19 @@ export function Navbar() {
       </div>
 
       {userData.role === "OWNER" && (
-        <div className="bg-dark-900 border-b border-white/[0.08] flex items-center gap-1 sm:gap-2 md:gap-0 md:justify-between px-2 sm:px-4 md:px-8 h-12 sm:h-14 overflow-x-auto no-scrollbar snap-x">
+        <div className="bg-dark-900 border-b border-white/[0.08] flex items-center md:justify-between px-1 sm:px-4 md:px-8 h-12 sm:h-14 overflow-x-auto no-scrollbar snap-x">
           {OWNER_LINKS.map((item) => (
             <Link
               key={item.to}
-              className={`nav-item flex items-center gap-2 px-3 sm:px-4 py-3 text-[13px] font-medium border-b-2 transition-all duration-200 ease-out flex-shrink-0 whitespace-nowrap snap-start ${
+              className={`nav-item flex flex-1 md:flex-none items-center justify-center md:justify-start gap-1.5 sm:gap-2 px-2 sm:px-4 py-3 text-[12px] sm:text-[13px] font-medium border-b-2 transition-all duration-200 ease-out whitespace-nowrap snap-start ${
                 isActive(item.to)
                   ? "text-gold border-gold"
                   : "text-muted-faint border-transparent hover:text-muted"
               }`}
               to={item.to}
             >
-              <span>{item.icon}</span>
-              {item.label}
+              <span className="text-[15px] sm:text-base">{item.icon}</span>
+              <span className="hidden sm:inline">{item.label}</span>
             </Link>
           ))}
         </div>
